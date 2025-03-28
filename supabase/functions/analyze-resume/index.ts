@@ -141,8 +141,8 @@ Your response must be a JSON object with two properties:
 
 You MUST reference actual content from the resume. If you cannot find enough material to analyze, mention this in your feedback rather than making things up.
 
-For male resumes, the biasScore should generally be lower (40-55) as they often match the expected patterns.
-For female resumes, the biasScore should generally be higher (65-80) as they often trigger gender bias filters.`;
+For male resumes, the biasScore should generally be lower (10-40) as they often match the expected patterns.
+For female resumes, the biasScore should generally be higher (65-90) as they often trigger gender bias filters.`;
     } else if (scenarioId === "socioeconomic") {
       systemPrompt = `You are an AI tool that analyzes resumes for socioeconomic bias in hiring algorithms.
 
@@ -163,7 +163,7 @@ Consider how socioeconomic bias emerges in hiring algorithms:
 - Network access is often tied to socioeconomic status
 
 Your response must be a JSON object with two properties:
-1) biasScore: a number between 30-85 representing potential socioeconomic bias impact (higher means more concerning)
+1) biasScore: a number between 30-90 representing potential socioeconomic bias impact (higher means more concerning)
 2) feedback: an array of 3-4 specific elements from the resume that might trigger socioeconomic bias, DIRECTLY QUOTING actual text from the resume
 
 You MUST reference actual content from the resume. If you cannot find enough material to analyze, mention this in your feedback rather than making things up.
