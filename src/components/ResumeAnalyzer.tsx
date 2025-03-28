@@ -19,15 +19,15 @@ const CASE_SCENARIOS = [
   {
     id: "amazon",
     name: "Historical Gender Bias",
-    description: "This model simulates how historical gender bias might affect the evaluation of your resume.",
+    description: "This model simulates how historical gender bias in hiring data might affect the evaluation of your resume.",
     prompt: "You are simulating a biased AI recruiting tool trained on historical data that shows bias against certain demographics. Analyze the specific content of this resume and identify potential bias triggers related to gender in the text, terminology, format, and structure. Consider elements like language choices, activities descriptions, and education patterns. Provide a JSON response with three properties: 1) biasScore: a number between 0-100 representing potential bias impact (higher means more concerning), 2) feedback: an array of 2-4 strings identifying SPECIFIC elements from the resume that might trigger bias, quoting actual text from the resume, and 3) recommendations: an array of 3-5 actionable, specific recommendations to modify the resume to reduce bias triggers. Base your analysis ONLY on the actual resume content provided.",
     icon: <Medal className="h-5 w-5 text-amber-500" />
   },
   {
     id: "keyword",
     name: "Keyword-Based ATS",
-    description: "This scenario simulates how basic ATS systems that rely heavily on keyword matching might evaluate your resume.",
-    prompt: "You are simulating a keyword-based Applicant Tracking System looking for tech industry candidates. Analyze the SPECIFIC CONTENT of this resume for how terminology, formatting, and credential presentation might create bias or be filtered out based on educational background or industry-specific terminology. Your analysis should be based SOLELY on the actual text provided in the resume. Return a JSON object with three properties: 1) biasScore: a number between 0-100 representing how likely the resume would be filtered out (higher means more likely to be rejected), 2) feedback: an array of 2-4 strings identifying SPECIFIC elements from the resume that might be problematic for keyword filtering, quoting actual text from the resume, and 3) recommendations: an array of 3-5 actionable, specific recommendations to optimize the actual resume for ATS keyword filtering. Focus only on industry terminology density, credential formatting, and job title conventions that appear in the provided resume.",
+    description: "This scenario simulates how basic Applicant Tracking Systems rely on keyword matching to filter resumes before human review.",
+    prompt: "You are simulating a keyword-based Applicant Tracking System that screens resumes primarily based on terminology matches. Analyze the SPECIFIC CONTENT of this resume for how industry terminology, formatting, and credential presentation might cause it to be filtered out. Your analysis should be based SOLELY on the actual text provided in the resume. Return a JSON object with three properties: 1) biasScore: a number between 0-100 representing how likely the resume would be filtered out (higher means more likely to be rejected), 2) feedback: an array of 2-4 strings identifying SPECIFIC elements from the resume that might cause keyword filtering issues, quoting actual text from the resume, and 3) recommendations: an array of 3-5 actionable, specific recommendations to optimize the actual resume for ATS keyword filtering. Focus only on industry terminology density, formatting issues, and standard job title conventions that appear in the provided resume.",
     icon: <List className="h-5 w-5 text-blue-500" />
   }
 ];
@@ -122,7 +122,8 @@ const ResumeAnalyzer: React.FC = () => {
       const selectedFile = e.target.files[0];
       
       if (selectedFile.type === 'application/pdf' || 
-          selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+          selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+          selectedFile.type === 'text/plain') {
         setFile(selectedFile);
         setUploadStatus('uploading');
         setProgress(25);
@@ -131,44 +132,13 @@ const ResumeAnalyzer: React.FC = () => {
         reader.onload = (event) => {
           setProgress(75);
           
-          let extractedText = '';
-          
           if (typeof event.target?.result === 'string') {
-            extractedText = event.target.result;
+            setResumeText(event.target.result);
           } else {
-            extractedText = `Talented Professional
-            email@example.com | (123) 456-7890 | City, State
-            
-            PROFESSIONAL SUMMARY
-            Dedicated and results-driven professional with over 5 years of experience in project management and team leadership. Proven track record of successfully delivering complex projects on time and within budget. Skilled in stakeholder communication and problem-solving.
-            
-            EXPERIENCE
-            Senior Project Manager | Tech Solutions Inc. | Jan 2020 - Present
-            - Led cross-functional teams of 10+ members to deliver software projects with 100% on-time completion rate
-            - Implemented new project management methodology resulting in 20% efficiency improvement
-            - Managed client relationships and communication for 5 major accounts totaling $2M in annual revenue
-            
-            Project Coordinator | Digital Innovations | Mar 2017 - Dec 2019
-            - Assisted in managing project timelines and resource allocation for web development projects
-            - Developed standardized documentation processes improving team communication
-            - Coordinated with clients to gather requirements and provide project updates
-            
-            EDUCATION
-            Bachelor of Science in Business Administration | State University | 2017
-            - Minor in Information Technology
-            - GPA: 3.8/4.0
-            
-            SKILLS
-            - Project Management (PMP Certified)
-            - Agile & Scrum Methodologies
-            - Stakeholder Management
-            - Budget Planning & Control
-            - Team Leadership
-            - Microsoft Office Suite
-            - Jira & Confluence`;
+            const textDecoder = new TextDecoder();
+            setResumeText(textDecoder.decode(event.target?.result as ArrayBuffer));
           }
           
-          setResumeText(extractedText);
           setUploadStatus('ready');
           setProgress(100);
           
@@ -187,12 +157,17 @@ const ResumeAnalyzer: React.FC = () => {
           });
         };
         
-        reader.readAsText(selectedFile);
+        if (selectedFile.type === 'application/pdf' || 
+            selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+          reader.readAsText(selectedFile);
+        } else {
+          reader.readAsText(selectedFile);
+        }
       } else {
         setUploadStatus('error');
         toast({
           title: "Invalid file type",
-          description: "Please upload a PDF or DOCX file",
+          description: "Please upload a PDF, DOCX, or TXT file",
           variant: "destructive"
         });
       }
@@ -231,6 +206,9 @@ const ResumeAnalyzer: React.FC = () => {
     }
     
     try {
+      console.log(`Analyzing resume for ${scenario.name}...`);
+      console.log(`Resume content length: ${resumeText.length} characters`);
+      
       const response = await supabase.functions.invoke('analyze-resume', {
         body: {
           resumeText,
@@ -355,11 +333,11 @@ const ResumeAnalyzer: React.FC = () => {
                               <Upload className="h-8 w-8 text-primary" />
                             </div>
                             <p className="text-primary font-medium">Click to upload or drag and drop</p>
-                            <p className="text-xs text-muted-foreground mt-2">PDF or DOCX (Max 5MB)</p>
+                            <p className="text-xs text-muted-foreground mt-2">PDF, DOCX, or TXT (Max 5MB)</p>
                             <Input 
                               id="resume-upload" 
                               type="file" 
-                              accept=".pdf,.docx" 
+                              accept=".pdf,.docx,.txt" 
                               onChange={handleFileChange}
                               className="hidden"
                             />
@@ -436,7 +414,7 @@ const ResumeAnalyzer: React.FC = () => {
                       {uploadStatus === 'error' && (
                         <div className="text-destructive flex items-center gap-2 my-4">
                           <AlertCircle size={18} />
-                          <span>Error processing file. Please try again with a PDF or DOCX.</span>
+                          <span>Error processing file. Please try again with a PDF, DOCX, or TXT file.</span>
                         </div>
                       )}
                     </div>
