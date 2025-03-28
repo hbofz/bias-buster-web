@@ -133,7 +133,7 @@ const BiasExplanation: React.FC = () => {
   };
   
   return (
-    <div className="w-full max-w-3xl mx-auto opacity-0 animate-fade-in shadow-card border rounded-lg overflow-hidden bg-gradient-to-br from-background to-muted/20">
+    <div className="w-full max-w-3xl mx-auto shadow-card border rounded-lg overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <div className="flex bg-muted/30">
         {steps.map((step, index) => (
           <button

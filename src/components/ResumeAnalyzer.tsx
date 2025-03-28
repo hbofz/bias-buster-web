@@ -115,6 +115,11 @@ const ResumeAnalyzer: React.FC = () => {
     }
   }, [state.fileContent, state.scenarioId, state.results, state.userFingerprint]);
   
+  // Clear state from localStorage on initial page load
+  useEffect(() => {
+    localStorage.removeItem(STATE_STORAGE_KEY);
+  }, []);
+  
   // Simulate progress during analysis
   useEffect(() => {
     if (state.isAnalyzing) {
@@ -317,7 +322,7 @@ const ResumeAnalyzer: React.FC = () => {
   const currentResult = state.results[state.scenarioId];
   
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 opacity-0 animate-fade-in">
+    <div className="w-full max-w-4xl mx-auto space-y-6">
       <Tabs 
         defaultValue="amazon" 
         value={state.scenarioId}
