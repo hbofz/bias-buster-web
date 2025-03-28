@@ -33,7 +33,7 @@
     --input: 220 13% 91%;
     --ring: 262.1 83.3% 57.8%;
     
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
  
   .dark {
@@ -71,12 +71,19 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  
+  /* Glass card effect */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
+  }
 }
 
+/* Enhanced gradient animations */
 @keyframes gradient-shift {
   0% {
     background-position: 0% 50%;
@@ -100,6 +107,26 @@
   }
 }
 
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px 0 rgba(139, 92, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgba(139, 92, 246, 0.3);
+  }
+}
+
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient-shift 15s ease infinite;
@@ -107,6 +134,14 @@
 
 .animate-fade-in-up {
   animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.5s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
 }
 
 .delay-100 {
@@ -128,3 +163,23 @@
 .delay-500 {
   animation-delay: 0.5s;
 }
+
+/* Smooth hover transitions */
+.hover-lift {
+  @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+}
+
+.hover-glow {
+  @apply transition-all duration-300 hover:shadow-[0_0_15px_rgba(139,92,246,0.3)];
+}
+
+/* Text gradient effects */
+.text-gradient {
+  @apply bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent;
+}
+
+/* Card gradients */
+.bg-card-gradient {
+  @apply bg-gradient-to-br from-white to-purple-50/50;
+}
+
