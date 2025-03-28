@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import * as pdfjs from "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/+esm";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +9,35 @@ const corsHeaders = {
 };
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+
+// Initialize PDF.js
+pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.worker.min.js";
+
+// Function to extract text from PDF data
+async function extractTextFromPDF(pdfData) {
+  try {
+    // Load the PDF document
+    const loadingTask = pdfjs.getDocument({ data: pdfData });
+    const pdf = await loadingTask.promise;
+    
+    console.log(`PDF loaded with ${pdf.numPages} pages`);
+    
+    // Extract text from all pages
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      fullText += pageText + '\n';
+    }
+    
+    console.log(`Successfully extracted ${fullText.length} characters from PDF`);
+    return fullText;
+  } catch (error) {
+    console.error('Error extracting text from PDF:', error);
+    return null;
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -35,99 +65,88 @@ serve(async (req) => {
     console.log(`Analyzing resume for scenario: ${scenarioId}`);
     console.log(`Resume content length: ${resumeText.length} characters`);
     
-    // Extract the text content if it's a PDF (starts with %PDF)
-    let cleanedResumeText = resumeText;
+    // Process the resume text based on format
+    let extractedText = resumeText;
+    
+    // Check if this is a PDF (starts with %PDF)
     if (resumeText.startsWith('%PDF')) {
-      // This is a PDF in binary/raw format - extract plaintext content
-      // For simplicity, we'll use a fallback text for demonstration
-      cleanedResumeText = `Talented Professional
-email@example.com | (123) 456-7890 | City, State
-
-PROFESSIONAL SUMMARY
-Dedicated and results-driven professional with over 5 years of experience in project management and team leadership. Proven track record of successfully delivering complex projects on time and within budget. Skilled in stakeholder communication and problem-solving.
-
-EXPERIENCE
-Senior Project Manager | Tech Solutions Inc. | Jan 2020 - Present
-- Led cross-functional teams of 10+ members to deliver software projects with 100% on-time completion rate
-- Implemented new project management methodology resulting in 20% efficiency improvement
-- Managed client relationships and communication for 5 major accounts totaling $2M in annual revenue
-
-Project Coordinator | Digital Innovations | Mar 2017 - Dec 2019
-- Assisted in managing project timelines and resource allocation for web development projects
-- Developed standardized documentation processes improving team communication
-- Coordinated with clients to gather requirements and provide project updates
-
-EDUCATION
-Bachelor of Science in Business Administration | State University | 2017
-- Minor in Information Technology
-- GPA: 3.8/4.0
-
-SKILLS
-- Project Management (PMP Certified)
-- Agile & Scrum Methodologies
-- Stakeholder Management
-- Budget Planning & Control
-- Team Leadership
-- Microsoft Office Suite
-- Jira & Confluence`;
+      console.log("Detected PDF content, attempting to extract text...");
       
-      console.log("Using fallback text for PDF content");
+      try {
+        // Convert the PDF string to binary data
+        const binaryData = new Uint8Array(resumeText.length);
+        for (let i = 0; i < resumeText.length; i++) {
+          binaryData[i] = resumeText.charCodeAt(i);
+        }
+        
+        // Extract text from the PDF
+        const pdfText = await extractTextFromPDF(binaryData);
+        
+        if (pdfText && pdfText.trim().length > 0) {
+          console.log(`Successfully extracted text from PDF: ${pdfText.substring(0, 100)}...`);
+          extractedText = pdfText;
+        } else {
+          console.log("PDF text extraction failed or returned empty text, using original content");
+        }
+      } catch (error) {
+        console.error("Error processing PDF content:", error);
+      }
     }
-
-    // Create a system prompt based on the scenario
+    
+    // Create specific system prompts based on the scenario
     let systemPrompt;
     
     if (scenarioId === "amazon") {
-      systemPrompt = `You are simulating a biased AI recruiting tool trained on historical data that shows bias against certain demographics. 
-      
-IMPORTANT: You must analyze ONLY the actual content in the provided resume. DO NOT invent or assume any information not present in the resume.
+      systemPrompt = `You are an AI tool that analyzes resumes for potential gender bias in hiring algorithms.
 
-For this specific scenario, focus on potential gender bias triggers in the resume text:
-1. Analyze language patterns and word choices that might be associated with gender
-2. Identify if terminology, activities, or roles described could trigger historical gender biases
-3. Examine educational background and work history presentation that might activate bias
-4. Consider formatting elements that might impact evaluation based on gender
+IMPORTANT: Your analysis MUST be based EXCLUSIVELY on the content provided in this specific resume. DO NOT make up or assume any information not present in the resume. If you can't find specific elements to analyze, acknowledge this fact in your feedback.
+
+For this specific scenario about gender bias:
+1. Analyze terminology and language patterns that might trigger algorithmic gender bias
+2. Look for specific examples of activities, roles, or achievements that might be interpreted differently based on gender
+3. Examine how educational credentials and work history are presented
+4. Consider how leadership, teamwork, and other qualities are described
 
 Your response must be a JSON object with three properties:
-1) biasScore: a number between 40-85 representing potential bias impact (higher means more concerning)
-2) feedback: an array of 3-4 specific elements from the resume that might trigger gender bias, quoting actual text
-3) recommendations: an array of 4-5 actionable recommendations to reduce gender bias triggers
+1) biasScore: a number between 40-85 representing potential gender bias impact (higher means more concerning)
+2) feedback: an array of 3-4 specific elements from the resume that might trigger gender bias, DIRECTLY QUOTING actual text from the resume
+3) recommendations: an array of 4-5 actionable recommendations to reduce gender bias signals
 
-Be honest and concrete in your analysis - if the resume doesn't contain certain information, acknowledge this rather than inventing details.`;
+Be concrete and specific in your analysis - reference actual content from the resume rather than making general statements.`;
     } else if (scenarioId === "keyword") {
-      systemPrompt = `You are simulating a keyword-based Applicant Tracking System (ATS) that screens resumes primarily on terminology matches.
+      systemPrompt = `You are an AI tool that analyzes resumes for how they might be processed by keyword-based Applicant Tracking Systems (ATS).
 
-IMPORTANT: You must analyze ONLY the actual content in the provided resume. DO NOT invent or assume any information not present in the resume.
+IMPORTANT: Your analysis MUST be based EXCLUSIVELY on the content provided in this specific resume. DO NOT make up or assume any information not present in the resume. If you can't find specific elements to analyze, acknowledge this fact in your feedback.
 
-For this specific scenario, focus on how the resume might be filtered by an ATS system:
+For this specific scenario about keyword-based ATS filtering:
 1. Analyze industry-specific terminology density and keyword optimization
-2. Examine formatting issues that might prevent proper parsing
-3. Check for standard credential presentation and job title conventions
-4. Evaluate for appropriate skills representation and technical terminology
+2. Identify specific formatting issues that might prevent proper machine parsing
+3. Evaluate how job titles, skills, and credentials are presented
+4. Look for keyword patterns that might help or hinder automated screening
 
 Your response must be a JSON object with three properties:
 1) biasScore: a number between 40-85 representing likelihood of being filtered out (higher means more likely rejected)
-2) feedback: an array of 3-4 specific elements from the resume that might cause keyword filtering issues, quoting actual text
+2) feedback: an array of 3-4 specific elements from the resume that might cause filtering issues, DIRECTLY QUOTING actual text from the resume
 3) recommendations: an array of 4-5 actionable recommendations to improve ATS compatibility
 
-Be honest and concrete in your analysis - if the resume doesn't contain certain information, acknowledge this rather than inventing details.`;
+Be concrete and specific in your analysis - reference actual content from the resume rather than making general statements.`;
     } else {
-      systemPrompt = `You are an expert in algorithmic bias in hiring systems. Your task is to analyze the provided resume and identify potential areas where bias could occur in automated screening.
+      systemPrompt = `You are an expert in algorithmic bias in hiring systems tasked with analyzing this specific resume.
       
-IMPORTANT: You must analyze ONLY the actual content in the provided resume. DO NOT invent or assume any information not present in the resume.
+IMPORTANT: Your analysis MUST be based EXCLUSIVELY on the content provided in this specific resume. DO NOT make up or assume any information not present in the resume. If you can't find specific elements to analyze, acknowledge this fact in your feedback.
 
-Analyze the following specific elements:
+Analyze the following specific elements from the resume:
 1. Language and terminology used
 2. Education and credentials formatting
 3. Employment history presentation
-4. Skills representation
+4. Skills representation and keyword usage
 
 Your response must be a JSON object with three properties:
 1) biasScore: a number between 40-85 representing potential bias impact (higher means more concerning)
-2) feedback: an array of 3-4 specific elements from the resume that might trigger bias, quoting actual text
+2) feedback: an array of 3-4 specific elements from the resume that might trigger bias, DIRECTLY QUOTING actual text from the resume
 3) recommendations: an array of 4-5 actionable recommendations to reduce bias triggers
 
-Be honest and concrete in your analysis - if the resume doesn't contain certain information, acknowledge this rather than inventing details.`;
+Be concrete and specific in your analysis - reference actual content from the resume rather than making general statements.`;
     }
 
     // Call OpenAI API to analyze the resume
@@ -146,7 +165,7 @@ Be honest and concrete in your analysis - if the resume doesn't contain certain 
           },
           {
             role: 'user',
-            content: `Please analyze this resume for ${scenarioId === "amazon" ? "gender bias" : "keyword-based ATS filtering"} potential:\n\n${cleanedResumeText}`
+            content: `Please analyze this resume for ${scenarioId === "amazon" ? "gender bias" : "keyword-based ATS filtering"} potential. Here's the full text content of the resume:\n\n${extractedText}`
           }
         ],
         response_format: { type: 'json_object' },
@@ -189,20 +208,21 @@ Be honest and concrete in your analysis - if the resume doesn't contain certain 
       
     } catch (e) {
       console.error('Error parsing OpenAI response as JSON:', e);
+      console.error('Raw response content:', openAIData.choices[0].message.content);
       
       // Fallback response to prevent breaking the UI
       analysis = {
         biasScore: scenarioId === "amazon" ? 65 : 55,
         feedback: [
-          "Could not process specific feedback from resume content. Please try again with a different file format.",
-          "The resume text may not have been properly extracted for analysis.",
-          "Our system detected potential issues with the file format or content structure."
+          "Could not properly analyze the specific content of your resume. This might be due to text extraction issues.",
+          "The resume format may not have been properly processed for detailed analysis.",
+          "Our system had difficulty identifying specific elements to provide personalized feedback."
         ],
         recommendations: [
           "Try uploading your resume in plain text format (.txt) for best results.",
           "Ensure your PDF is not scanned or image-based, as text extraction may be limited.",
-          "Consider using a more standard resume format to improve analysis accuracy.",
-          "Remove any unusual formatting, headers, or footers that might interfere with text extraction."
+          "Consider using a more standard resume format without complex formatting.",
+          "If possible, copy the text directly from your resume document and paste it into a text file."
         ]
       };
       
