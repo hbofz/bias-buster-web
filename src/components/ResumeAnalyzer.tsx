@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,19 +16,134 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 
+// Demo resumes for educational purposes
+const DEMO_RESUMES = {
+  male: `JOHN SMITH
+123 Tech Lane, San Francisco, CA 94105
+john.smith@email.com | (555) 123-4567 | linkedin.com/in/johnsmith
+
+PROFESSIONAL SUMMARY
+Results-driven software engineer with 6+ years of experience building scalable applications. Strong technical leadership skills with proven ability to deliver complex projects on time and mentor junior developers.
+
+SKILLS
+Programming: Java, Python, JavaScript, TypeScript, C++, Go
+Frameworks: React, Angular, Spring Boot, Node.js, Express
+Cloud: AWS (EC2, S3, Lambda), Google Cloud Platform, Azure
+DevOps: Docker, Kubernetes, Jenkins, CI/CD pipelines
+Databases: PostgreSQL, MongoDB, Redis, DynamoDB
+
+EXPERIENCE
+SENIOR SOFTWARE ENGINEER
+TechCorp Inc., San Francisco, CA | June 2019 - Present
+• Led a team of 5 engineers to redesign the microservices architecture, improving system performance by 40%
+• Implemented fault-tolerant distributed systems that reduced downtime by 99.9%
+• Built an automated CI/CD pipeline that decreased deployment time from hours to minutes
+• Mentored 3 junior developers who were promoted within 18 months
+
+SOFTWARE ENGINEER
+DataSystems LLC, Palo Alto, CA | August 2016 - May 2019
+• Developed RESTful APIs that processed 10M+ daily requests with 99.9% uptime
+• Optimized database queries reducing response time by 60%
+• Collaborated with product managers to define and implement new features
+• Conducted code reviews and implemented best practices for code quality
+
+EDUCATION
+Master of Science in Computer Science
+Stanford University | 2014 - 2016
+• GPA: 3.9/4.0
+• Teaching Assistant for Algorithms and Data Structures
+
+Bachelor of Science in Computer Engineering
+University of California, Berkeley | 2010 - 2014
+• GPA: 3.8/4.0
+• President, Robotics Club
+
+PROJECTS
+HIGH-PERFORMANCE TRADING PLATFORM
+• Built a low-latency trading system processing 100,000+ transactions per second
+• Implemented real-time data analytics using Kafka and Spark
+• Reduced transaction processing time by 75% through algorithm optimization
+
+CLOUD-NATIVE INVENTORY MANAGEMENT
+• Designed and developed a containerized inventory system using microservices
+• Implemented autoscaling and load balancing for consistent performance
+• Reduced operational costs by 35% through efficient resource utilization
+
+AWARDS
+• Winner, Global Hackathon Challenge 2020
+• Patent holder for "Distributed System for Data Processing" (US Patent #12345678)
+• Employee of the Year, DataSystems LLC, 2018`,
+
+  female: `SARAH JOHNSON
+456 Innovation Drive, Boston, MA 02110
+sarah.johnson@email.com | (555) 987-6543 | linkedin.com/in/sarahjohnson
+
+PROFESSIONAL SUMMARY
+Dedicated software engineer with 6+ years of experience developing innovative solutions for complex technical challenges. Passionate about creating intuitive user experiences and mentoring team members.
+
+SKILLS
+Programming: Python, JavaScript, TypeScript, Java, Ruby, PHP
+Frameworks: React, Vue.js, Django, Ruby on Rails, Express
+Cloud: AWS (S3, EC2, CloudFront), Google Cloud, Heroku
+DevOps: Docker, Kubernetes, GitHub Actions, Travis CI
+Databases: MySQL, PostgreSQL, MongoDB, Firebase
+
+EXPERIENCE
+LEAD FRONT-END DEVELOPER
+InnoTech Solutions, Boston, MA | July 2019 - Present
+• Coordinated with UX designers to implement responsive designs across 15+ web applications
+• Organized code workshops that improved team coding standards and reduced bugs by 30%
+• Created reusable component library reducing development time for new features by 40%
+• Collaborated with cross-functional teams to deliver projects under tight deadlines
+
+WEB DEVELOPER
+Creative Digital Agency, Cambridge, MA | September 2016 - June 2019
+• Developed and maintained websites for 25+ clients from various industries
+• Improved website performance scores by an average of 45% through optimization techniques
+• Assisted in migrating legacy systems to modern technology stacks
+• Implemented automated testing that caught 90% of regressions before deployment
+
+EDUCATION
+Master of Science in Software Engineering
+Massachusetts Institute of Technology | 2014 - 2016
+• GPA: 3.8/4.0
+• Women in Computer Science Club, Secretary
+
+Bachelor of Arts in Computer Science
+Harvard University | 2010 - 2014
+• GPA: 3.7/4.0
+• Organized annual women's coding workshop for local high school students
+
+PROJECTS
+ACCESSIBLE WEB PLATFORM
+• Designed and developed a platform with WCAG 2.1 AAA compliance
+• Implemented screen reader compatibility and keyboard navigation
+• Created documentation and guidelines for accessible web development
+
+COMMUNITY RESOURCE MAPPING TOOL
+• Built a mobile-responsive web application for community resource discovery
+• Integrated geolocation services and filtering capabilities
+• Volunteered 200+ hours maintaining the platform for non-profit organizations
+
+RECOGNITION
+• Speaker, Women in Tech Conference 2021
+• Best Team Collaboration Award, InnoTech Solutions, 2020
+• Outstanding Volunteer Service Award, Code for America, 2019`
+};
+
 const CASE_SCENARIOS = [
   {
     id: "amazon",
     name: "Historical Gender Bias",
     description: "This model simulates how historical gender bias in hiring data might affect the evaluation of your resume.",
-    prompt: "You are simulating a biased AI recruiting tool trained on historical data that shows bias against certain demographics. Analyze the specific content of this resume and identify potential bias triggers related to gender in the text, terminology, format, and structure. Consider elements like language choices, activities descriptions, and education patterns. Provide a JSON response with three properties: 1) biasScore: a number between 0-100 representing potential bias impact (higher means more concerning), 2) feedback: an array of 2-4 strings identifying SPECIFIC elements from the resume that might trigger bias, quoting actual text from the resume, and 3) recommendations: an array of 3-5 actionable, specific recommendations to modify the resume to reduce bias triggers. Base your analysis ONLY on the actual resume content provided.",
+    prompt: "You are simulating a biased AI recruiting tool trained on historical data that shows bias against certain demographics. Analyze the specific content of this resume and identify potential bias triggers related to gender in the text, terminology, format, and structure. Consider elements like language choices, activities descriptions, and education patterns. Provide a JSON response with three properties: 1) biasScore: a number between 40-85 representing potential bias impact (higher means more concerning), 2) feedback: an array of 3-4 strings identifying SPECIFIC elements from the resume that might trigger gender bias, DIRECTLY QUOTING actual text from the resume, and 3) recommendations: an array of 4-5 actionable, specific recommendations to modify the resume to reduce bias triggers. Base your analysis ONLY on the actual resume content provided. If you can't find specific elements to analyze, acknowledge this fact in your feedback and recommendations rather than making things up.",
     icon: <Medal className="h-5 w-5 text-amber-500" />
   },
   {
     id: "keyword",
     name: "Keyword-Based ATS",
     description: "This scenario simulates how basic Applicant Tracking Systems rely on keyword matching to filter resumes before human review.",
-    prompt: "You are simulating a keyword-based Applicant Tracking System that screens resumes primarily based on terminology matches. Analyze the SPECIFIC CONTENT of this resume for how industry terminology, formatting, and credential presentation might cause it to be filtered out. Your analysis should be based SOLELY on the actual text provided in the resume. Return a JSON object with three properties: 1) biasScore: a number between 0-100 representing how likely the resume would be filtered out (higher means more likely to be rejected), 2) feedback: an array of 2-4 strings identifying SPECIFIC elements from the resume that might cause keyword filtering issues, quoting actual text from the resume, and 3) recommendations: an array of 3-5 actionable, specific recommendations to optimize the actual resume for ATS keyword filtering. Focus only on industry terminology density, formatting issues, and standard job title conventions that appear in the provided resume.",
+    prompt: "You are simulating a keyword-based Applicant Tracking System that screens resumes primarily based on terminology matches. Analyze the SPECIFIC CONTENT of this resume for how industry terminology, formatting, and credential presentation might cause it to be filtered out. Your analysis should be based SOLELY on the actual text provided in the resume. Return a JSON object with three properties: 1) biasScore: a number between 40-85 representing how likely the resume would be filtered out (higher means more likely to be rejected), 2) feedback: an array of 3-4 strings identifying SPECIFIC elements from the resume that might cause keyword filtering issues, DIRECTLY QUOTING actual text from the resume, and 3) recommendations: an array of 4-5 actionable, specific recommendations to optimize the actual resume for ATS keyword filtering. Focus only on industry terminology density, formatting issues, and standard job title conventions that appear in the provided resume. If you can't find specific elements to analyze, acknowledge this fact in your feedback and recommendations rather than making things up.",
     icon: <List className="h-5 w-5 text-blue-500" />
   }
 ];
@@ -52,6 +168,7 @@ const ResumeAnalyzer: React.FC = () => {
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'ready' | 'error'>('idle');
   const [compareMode, setCompareMode] = useState(false);
   const [userFingerprint] = useState(() => getUserFingerprint());
+  const [demoMode, setDemoMode] = useState<'none' | 'male' | 'female'>('none');
   const { toast } = useToast();
   
   const { data: previousAnalyses, isLoading: isLoadingPreviousAnalyses, refetch: refetchAnalyses } = useQuery({
@@ -115,59 +232,18 @@ const ResumeAnalyzer: React.FC = () => {
     setResumeText('');
     setUploadStatus('idle');
     setProgress(0);
+    setDemoMode('none');
   };
   
-  const extractTextFromFile = async (selectedFile: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      
-      reader.onload = (event) => {
-        if (!event.target || !event.target.result) {
-          reject(new Error("Failed to read file"));
-          return;
-        }
-        
-        let text = "";
-        
-        // Handle text based on file type
-        if (selectedFile.type === 'text/plain') {
-          // For plain text files, just use the result as is
-          text = event.target.result as string;
-        } else if (selectedFile.type === 'application/pdf') {
-          // For PDFs, read as array buffer and convert to base64 string
-          if (typeof event.target.result === 'string') {
-            text = event.target.result;
-          } else {
-            // Convert ArrayBuffer to string
-            const uint8Array = new Uint8Array(event.target.result as ArrayBuffer);
-            let binaryString = '';
-            for (let i = 0; i < uint8Array.length; i++) {
-              binaryString += String.fromCharCode(uint8Array[i]);
-            }
-            text = binaryString;
-          }
-        } else if (selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-          // For DOCX files, extract text as string
-          if (typeof event.target.result === 'string') {
-            text = event.target.result;
-          } else {
-            const textDecoder = new TextDecoder();
-            text = textDecoder.decode(event.target.result as ArrayBuffer);
-          }
-        }
-        
-        resolve(text);
-      };
-      
-      reader.onerror = () => {
-        reject(new Error("Error reading file"));
-      };
-      
-      if (selectedFile.type === 'application/pdf') {
-        reader.readAsBinaryString(selectedFile);
-      } else {
-        reader.readAsText(selectedFile);
-      }
+  const handleDemoResumeSelect = (demoType: 'male' | 'female') => {
+    setDemoMode(demoType);
+    setResumeText(DEMO_RESUMES[demoType]);
+    setUploadStatus('ready');
+    setProgress(100);
+    
+    toast({
+      title: `Demo ${demoType} resume loaded`,
+      description: "This demo resume is ready for analysis",
     });
   };
   
@@ -175,29 +251,43 @@ const ResumeAnalyzer: React.FC = () => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       
-      if (selectedFile.type === 'application/pdf' || 
-          selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-          selectedFile.type === 'text/plain') {
+      if (selectedFile.type === 'text/plain') {
         setFile(selectedFile);
         setUploadStatus('uploading');
         setProgress(25);
         
         try {
-          const extractedText = await extractTextFromFile(selectedFile);
-          setResumeText(extractedText);
-          setUploadStatus('ready');
-          setProgress(100);
+          const reader = new FileReader();
           
-          toast({
-            title: "Resume processed successfully",
-            description: "Your resume is ready for analysis",
-          });
+          reader.onload = (event) => {
+            if (event.target && typeof event.target.result === 'string') {
+              setResumeText(event.target.result);
+              setUploadStatus('ready');
+              setProgress(100);
+              
+              toast({
+                title: "Resume processed successfully",
+                description: "Your resume is ready for analysis",
+              });
+            }
+          };
+          
+          reader.onerror = () => {
+            setUploadStatus('error');
+            toast({
+              title: "Error reading file",
+              description: "Could not read the text file",
+              variant: "destructive"
+            });
+          };
+          
+          reader.readAsText(selectedFile);
         } catch (error) {
           console.error("Error processing file:", error);
           setUploadStatus('error');
           toast({
             title: "Error processing file",
-            description: "Could not read file content. Try using a plain text format.",
+            description: "Could not read file content",
             variant: "destructive"
           });
         }
@@ -205,7 +295,7 @@ const ResumeAnalyzer: React.FC = () => {
         setUploadStatus('error');
         toast({
           title: "Invalid file type",
-          description: "Please upload a PDF, DOCX, or TXT file",
+          description: "Please upload a TXT file only",
           variant: "destructive"
         });
       }
@@ -213,10 +303,10 @@ const ResumeAnalyzer: React.FC = () => {
   };
   
   const handleAnalyze = async () => {
-    if (!file || !resumeText) {
+    if (!resumeText) {
       toast({
-        title: "No file processed",
-        description: "Please upload and process a resume first",
+        title: "No resume content",
+        description: "Please upload a text file or use one of the demo resumes",
         variant: "destructive"
       });
       return;
@@ -247,13 +337,15 @@ const ResumeAnalyzer: React.FC = () => {
       console.log(`Analyzing resume for ${scenario.name}...`);
       console.log(`Resume content length: ${resumeText.length} characters`);
       
+      const filename = file ? file.name : `demo-${demoMode}-resume.txt`;
+      
       const response = await supabase.functions.invoke('analyze-resume', {
         body: {
           resumeText,
           scenarioId: scenario.id,
           prompt: scenario.prompt,
           userFingerprint,
-          filename: file.name
+          filename
         }
       });
       
@@ -265,7 +357,7 @@ const ResumeAnalyzer: React.FC = () => {
         .from('resume_analyses')
         .insert({
           user_fingerprint: userFingerprint,
-          resume_filename: file.name,
+          resume_filename: filename,
           scenario_id: scenario.id,
           bias_score: response.data.analysis.bias_score,
           feedback: response.data.analysis.feedback,
@@ -323,7 +415,7 @@ const ResumeAnalyzer: React.FC = () => {
       <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-t-lg">
         <CardTitle className="text-2xl font-bold text-center">Resume Bias Analyzer</CardTitle>
         <CardDescription className="text-base text-center max-w-2xl mx-auto">
-          Upload your resume to see how it might be evaluated by different AI hiring systems.
+          Upload your resume (TXT format only) or use our demo resumes to see how AI hiring systems might evaluate them.
           This simulation demonstrates potential algorithmic biases in hiring.
         </CardDescription>
       </CardHeader>
@@ -360,22 +452,63 @@ const ResumeAnalyzer: React.FC = () => {
                     <div className="bg-gradient-to-b from-card to-muted/30 rounded-lg p-5 border shadow-sm">
                       <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
                         <Upload className="h-5 w-5 text-primary" />
-                        Upload your resume
+                        Upload your resume or use a demo
                       </h3>
                       
+                      {/* Demo Resume Options */}
                       {uploadStatus === 'idle' && (
                         <div className="space-y-5">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <Button
+                              onClick={() => handleDemoResumeSelect('male')}
+                              variant="outline"
+                              className="h-auto py-4 px-4 flex flex-col items-center gap-2"
+                            >
+                              <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
+                                <Award className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                              </div>
+                              <div className="text-center">
+                                <p className="font-medium">Demo Male Resume</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  See how the system evaluates a stereotypically "male" resume
+                                </p>
+                              </div>
+                            </Button>
+                            
+                            <Button
+                              onClick={() => handleDemoResumeSelect('female')}
+                              variant="outline"
+                              className="h-auto py-4 px-4 flex flex-col items-center gap-2"
+                            >
+                              <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-full">
+                                <Award className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                              </div>
+                              <div className="text-center">
+                                <p className="font-medium">Demo Female Resume</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  See how the system evaluates a stereotypically "female" resume
+                                </p>
+                              </div>
+                            </Button>
+                          </div>
+                          
+                          <div className="flex items-center gap-4 my-6">
+                            <div className="h-px bg-muted flex-1"></div>
+                            <p className="text-sm text-muted-foreground">or upload your own</p>
+                            <div className="h-px bg-muted flex-1"></div>
+                          </div>
+                          
                           <div className="border-2 border-dashed border-primary/20 rounded-lg p-8 text-center cursor-pointer hover:bg-primary/5 transition-all"
                             onClick={() => document.getElementById('resume-upload')?.click()}>
                             <div className="bg-primary/10 h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4">
                               <Upload className="h-8 w-8 text-primary" />
                             </div>
                             <p className="text-primary font-medium">Click to upload or drag and drop</p>
-                            <p className="text-xs text-muted-foreground mt-2">PDF, DOCX, or TXT (Max 5MB)</p>
+                            <p className="text-xs text-muted-foreground mt-2">TXT files only (Max 5MB)</p>
                             <Input 
                               id="resume-upload" 
                               type="file" 
-                              accept=".pdf,.docx,.txt" 
+                              accept=".txt" 
                               onChange={handleFileChange}
                               className="hidden"
                             />
@@ -389,7 +522,7 @@ const ResumeAnalyzer: React.FC = () => {
                             <FileText className="text-primary h-5 w-5" />
                             <div className="flex-1">
                               <div className="flex justify-between text-sm mb-1">
-                                <span className="font-medium">{file?.name}</span>
+                                <span className="font-medium">{file?.name || `demo-${demoMode}-resume.txt`}</span>
                                 <span className="text-muted-foreground">{Math.round(progress)}%</span>
                               </div>
                               <Progress value={progress} className="h-2" />
@@ -405,7 +538,7 @@ const ResumeAnalyzer: React.FC = () => {
                         <div className="space-y-4">
                           <div className="flex items-center gap-3 text-green-600 dark:text-green-400">
                             <CheckCircle size={20} />
-                            <span className="text-base font-medium">{file?.name} ready for analysis</span>
+                            <span className="text-base font-medium">{demoMode !== 'none' ? `Demo ${demoMode} resume` : file?.name} ready for analysis</span>
                           </div>
                           <div className="flex flex-col md:flex-row gap-3 mt-2">
                             <Button 
@@ -430,7 +563,7 @@ const ResumeAnalyzer: React.FC = () => {
                               className="gap-2"
                             >
                               <FileX size={16} />
-                              Change File
+                              Change Resume
                             </Button>
                           </div>
                           
@@ -452,7 +585,7 @@ const ResumeAnalyzer: React.FC = () => {
                       {uploadStatus === 'error' && (
                         <div className="text-destructive flex items-center gap-2 my-4">
                           <AlertCircle size={18} />
-                          <span>Error processing file. Please try again with a PDF, DOCX, or TXT file.</span>
+                          <span>Error processing file. Please try again with a TXT file.</span>
                         </div>
                       )}
                     </div>

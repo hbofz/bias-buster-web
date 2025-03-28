@@ -9,8 +9,6 @@ const corsHeaders = {
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
-// Note: Removed PDF.js direct implementation as it's causing issues in Deno runtime
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -37,9 +35,6 @@ serve(async (req) => {
     console.log(`Analyzing resume for scenario: ${scenarioId}`);
     console.log(`Resume content length: ${resumeText.length} characters`);
     
-    // We won't try to process PDFs server-side anymore, as PDF.js is causing issues
-    // Instead, we'll use the resumeText as provided by the frontend
-
     // Create specific system prompts based on the scenario
     let systemPrompt;
     
@@ -176,9 +171,9 @@ You MUST reference actual content from the resume. If you cannot find enough mat
         ],
         recommendations: [
           "Try uploading your resume in plain text format (.txt) for best results.",
-          "Ensure your PDF is not scanned or image-based, as text extraction may be limited.",
-          "Consider using a more standard resume format without complex formatting.",
-          "If possible, copy the text directly from your resume document and paste it into a text file."
+          "Ensure your text is well-structured with clear section headings.",
+          "Consider using standard section titles like 'Experience', 'Education', 'Skills', etc.",
+          "Make sure your text file doesn't contain special characters or formatting that might interfere with analysis."
         ]
       };
       
@@ -211,8 +206,8 @@ You MUST reference actual content from the resume. If you cannot find enough mat
           ],
           recommendations: [
             "Try uploading a plain text (.txt) version of your resume.",
-            "Ensure your PDF is text-based rather than image-based.",
-            "Remove any complex formatting that might interfere with text extraction.",
+            "Make sure your text file is properly formatted with clear sections.",
+            "Remove any special characters or formatting that might interfere with text processing.",
             "Try again later if the issue persists."
           ]
         }
