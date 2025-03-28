@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,33 +15,29 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 
-// Case scenarios with enhanced descriptions and prompts
 const CASE_SCENARIOS = [
   {
     id: "amazon",
-    name: "Amazon's AI Recruiting Tool",
-    description: "This model simulates the historical bias of Amazon's AI recruiting tool that favored male candidates.",
-    prompt: "You are simulating Amazon's biased AI recruiting tool from 2018. The tool was trained on 10 years of resumes, mostly from men, creating a bias against female candidates. Analyze this resume and return a JSON object with three properties: 1) biasScore: a number between 0-100 representing how biased the system would be (higher means more biased), 2) feedback: an array of 2-4 strings identifying specific elements in the resume that might trigger gender bias, and 3) recommendations: an array of 3-5 actionable recommendations to reduce bias triggers. Focus on gendered language, education patterns, and activity descriptions that historically correlate with gender.",
+    name: "Historical Gender Bias",
+    description: "This model simulates how historical gender bias might affect the evaluation of your resume.",
+    prompt: "You are simulating a biased AI recruiting tool trained on historical data that shows bias against certain demographics. Analyze the specific content of this resume and identify potential bias triggers related to gender in the text, terminology, format, and structure. Consider elements like language choices, activities descriptions, and education patterns. Provide a JSON response with three properties: 1) biasScore: a number between 0-100 representing potential bias impact (higher means more concerning), 2) feedback: an array of 2-4 strings identifying SPECIFIC elements from the resume that might trigger bias, quoting actual text from the resume, and 3) recommendations: an array of 3-5 actionable, specific recommendations to modify the resume to reduce bias triggers. Base your analysis ONLY on the actual resume content provided.",
     icon: <Medal className="h-5 w-5 text-amber-500" />
   },
   {
     id: "keyword",
     name: "Keyword-Based ATS",
-    description: "This scenario simulates basic ATS systems that rely heavily on keyword matching.",
-    prompt: "You are simulating a keyword-based Applicant Tracking System looking for tech industry candidates. Analyze this resume for how terminology, formatting, and credential presentation might create bias based on educational background or previous employer prestige. Return a JSON object with three properties: 1) biasScore: a number between 0-100 representing how biased the system would be (higher means more biased), 2) feedback: an array of 2-4 strings identifying specific elements that might trigger keyword-matching bias, and 3) recommendations: an array of 3-5 actionable recommendations to optimize for ATS keyword filtering while reducing bias. Focus on industry terminology density, credential formatting, and job title conventions.",
+    description: "This scenario simulates how basic ATS systems that rely heavily on keyword matching might evaluate your resume.",
+    prompt: "You are simulating a keyword-based Applicant Tracking System looking for tech industry candidates. Analyze the SPECIFIC CONTENT of this resume for how terminology, formatting, and credential presentation might create bias or be filtered out based on educational background or industry-specific terminology. Your analysis should be based SOLELY on the actual text provided in the resume. Return a JSON object with three properties: 1) biasScore: a number between 0-100 representing how likely the resume would be filtered out (higher means more likely to be rejected), 2) feedback: an array of 2-4 strings identifying SPECIFIC elements from the resume that might be problematic for keyword filtering, quoting actual text from the resume, and 3) recommendations: an array of 3-5 actionable, specific recommendations to optimize the actual resume for ATS keyword filtering. Focus only on industry terminology density, credential formatting, and job title conventions that appear in the provided resume.",
     icon: <List className="h-5 w-5 text-blue-500" />
   }
 ];
 
-// Get a fingerprint to identify this user without authentication
 const getUserFingerprint = () => {
-  // Check if a fingerprint exists in localStorage
   const storedFingerprint = localStorage.getItem('userFingerprint');
   if (storedFingerprint) {
     return storedFingerprint;
   }
   
-  // Generate a new fingerprint and store it
   const newFingerprint = uuidv4();
   localStorage.setItem('userFingerprint', newFingerprint);
   return newFingerprint;
@@ -59,7 +54,6 @@ const ResumeAnalyzer: React.FC = () => {
   const [userFingerprint] = useState(() => getUserFingerprint());
   const { toast } = useToast();
   
-  // Query for user's previous analyses
   const { data: previousAnalyses, isLoading: isLoadingPreviousAnalyses, refetch: refetchAnalyses } = useQuery({
     queryKey: ['previousAnalyses', userFingerprint],
     queryFn: async () => {
@@ -76,7 +70,6 @@ const ResumeAnalyzer: React.FC = () => {
     enabled: !!userFingerprint,
   });
   
-  // Format the timestamps for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -87,11 +80,9 @@ const ResumeAnalyzer: React.FC = () => {
     });
   };
   
-  // Generate data for charts
   const getComparisonChartData = () => {
     if (!previousAnalyses || previousAnalyses.length === 0) return [];
     
-    // Group by scenario and get the most recent for each
     const scenarioMap = new Map();
     previousAnalyses.forEach(analysis => {
       if (!scenarioMap.has(analysis.scenario_id) || 
@@ -100,7 +91,6 @@ const ResumeAnalyzer: React.FC = () => {
       }
     });
     
-    // Convert to array for charting
     return Array.from(scenarioMap.values()).map(analysis => ({
       name: CASE_SCENARIOS.find(s => s.id === analysis.scenario_id)?.name || analysis.scenario_id,
       score: Number(analysis.bias_score),
@@ -108,11 +98,9 @@ const ResumeAnalyzer: React.FC = () => {
     }));
   };
 
-  // Generate radar chart data from the analysis
   const getRadarChartData = (analysis: any) => {
     if (!analysis) return [];
     
-    // Create radar chart categories based on analysis
     return [
       { subject: 'Gender Bias', A: analysis.bias_score * 0.85, fullMark: 100 },
       { subject: 'Language', A: analysis.bias_score * 0.7, fullMark: 100 },
@@ -122,7 +110,6 @@ const ResumeAnalyzer: React.FC = () => {
     ];
   };
   
-  // Reset the analysis for a new upload
   const resetAnalysis = () => {
     setFile(null);
     setResumeText('');
@@ -130,57 +117,58 @@ const ResumeAnalyzer: React.FC = () => {
     setProgress(0);
   };
   
-  // Handle file upload and extraction
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       
-      // Check if the file is a PDF or DOCX
       if (selectedFile.type === 'application/pdf' || 
           selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         setFile(selectedFile);
         setUploadStatus('uploading');
         setProgress(25);
         
-        // In a real implementation, you would use a library to extract text
-        // For this demo, we'll simulate text extraction
-        setTimeout(() => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
           setProgress(75);
           
-          // Simulate getting text from the resume
-          // In a real app, you would use PDF.js or similar
-          const mockText = `Talented Professional
-          email@example.com | (123) 456-7890 | City, State
+          let extractedText = '';
           
-          PROFESSIONAL SUMMARY
-          Dedicated and results-driven professional with over 5 years of experience in project management and team leadership. Proven track record of successfully delivering complex projects on time and within budget. Skilled in stakeholder communication and problem-solving.
+          if (typeof event.target?.result === 'string') {
+            extractedText = event.target.result;
+          } else {
+            extractedText = `Talented Professional
+            email@example.com | (123) 456-7890 | City, State
+            
+            PROFESSIONAL SUMMARY
+            Dedicated and results-driven professional with over 5 years of experience in project management and team leadership. Proven track record of successfully delivering complex projects on time and within budget. Skilled in stakeholder communication and problem-solving.
+            
+            EXPERIENCE
+            Senior Project Manager | Tech Solutions Inc. | Jan 2020 - Present
+            - Led cross-functional teams of 10+ members to deliver software projects with 100% on-time completion rate
+            - Implemented new project management methodology resulting in 20% efficiency improvement
+            - Managed client relationships and communication for 5 major accounts totaling $2M in annual revenue
+            
+            Project Coordinator | Digital Innovations | Mar 2017 - Dec 2019
+            - Assisted in managing project timelines and resource allocation for web development projects
+            - Developed standardized documentation processes improving team communication
+            - Coordinated with clients to gather requirements and provide project updates
+            
+            EDUCATION
+            Bachelor of Science in Business Administration | State University | 2017
+            - Minor in Information Technology
+            - GPA: 3.8/4.0
+            
+            SKILLS
+            - Project Management (PMP Certified)
+            - Agile & Scrum Methodologies
+            - Stakeholder Management
+            - Budget Planning & Control
+            - Team Leadership
+            - Microsoft Office Suite
+            - Jira & Confluence`;
+          }
           
-          EXPERIENCE
-          Senior Project Manager | Tech Solutions Inc. | Jan 2020 - Present
-          - Led cross-functional teams of 10+ members to deliver software projects with 100% on-time completion rate
-          - Implemented new project management methodology resulting in 20% efficiency improvement
-          - Managed client relationships and communication for 5 major accounts totaling $2M in annual revenue
-          
-          Project Coordinator | Digital Innovations | Mar 2017 - Dec 2019
-          - Assisted in managing project timelines and resource allocation for web development projects
-          - Developed standardized documentation processes improving team communication
-          - Coordinated with clients to gather requirements and provide project updates
-          
-          EDUCATION
-          Bachelor of Science in Business Administration | State University | 2017
-          - Minor in Information Technology
-          - GPA: 3.8/4.0
-          
-          SKILLS
-          - Project Management (PMP Certified)
-          - Agile & Scrum Methodologies
-          - Stakeholder Management
-          - Budget Planning & Control
-          - Team Leadership
-          - Microsoft Office Suite
-          - Jira & Confluence`;
-          
-          setResumeText(mockText);
+          setResumeText(extractedText);
           setUploadStatus('ready');
           setProgress(100);
           
@@ -188,7 +176,18 @@ const ResumeAnalyzer: React.FC = () => {
             title: "Resume processed successfully",
             description: "Your resume is ready for analysis",
           });
-        }, 1500);
+        };
+        
+        reader.onerror = () => {
+          setUploadStatus('error');
+          toast({
+            title: "Error processing file",
+            description: "Could not read file content",
+            variant: "destructive"
+          });
+        };
+        
+        reader.readAsText(selectedFile);
       } else {
         setUploadStatus('error');
         toast({
@@ -200,7 +199,6 @@ const ResumeAnalyzer: React.FC = () => {
     }
   };
   
-  // Handle the resume analysis
   const handleAnalyze = async () => {
     if (!file || !resumeText) {
       toast({
@@ -233,7 +231,6 @@ const ResumeAnalyzer: React.FC = () => {
     }
     
     try {
-      // Call our edge function
       const response = await supabase.functions.invoke('analyze-resume', {
         body: {
           resumeText,
@@ -248,7 +245,6 @@ const ResumeAnalyzer: React.FC = () => {
         throw new Error(response.error.message || 'Failed to analyze resume');
       }
       
-      // Save analysis to the database
       const { error: insertError } = await supabase
         .from('resume_analyses')
         .insert({
@@ -268,7 +264,6 @@ const ResumeAnalyzer: React.FC = () => {
       setProgress(100);
       setIsAnalyzing(false);
       
-      // Refetch analyses to include the new one
       refetchAnalyses();
       
       toast({
@@ -288,7 +283,6 @@ const ResumeAnalyzer: React.FC = () => {
     }
   };
   
-  // Find the most recent analysis for the active scenario
   const getCurrentAnalysis = () => {
     if (!previousAnalyses || previousAnalyses.length === 0) return null;
     
@@ -299,7 +293,6 @@ const ResumeAnalyzer: React.FC = () => {
   const chartData = getComparisonChartData();
   const radarData = currentAnalysis ? getRadarChartData(currentAnalysis) : [];
   
-  // Effect to handle progress animation
   useEffect(() => {
     if (isAnalyzing) {
       const timer = setTimeout(() => {
@@ -678,7 +671,6 @@ const ResumeAnalyzer: React.FC = () => {
   );
 };
 
-// Custom tooltip for the chart
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (

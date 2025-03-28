@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -14,14 +13,12 @@ import { ChevronDown } from 'lucide-react';
 import { Shield, Database, LineChart, Brain, Users, Globe } from 'lucide-react';
 
 const Index = () => {
-  // Function to handle scroll animations
   const handleScroll = () => {
     const elements = document.querySelectorAll('.animate-fade-in-up');
     
     elements.forEach(element => {
       const position = element.getBoundingClientRect();
       
-      // If element is in viewport
       if (position.top < window.innerHeight - 100) {
         element.classList.add('opacity-100');
       }
@@ -30,7 +27,6 @@ const Index = () => {
   
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
-    // Trigger once on load
     handleScroll();
     
     return () => {
@@ -42,7 +38,6 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden animate-gradient bg-gradient-to-r from-primary/5 via-background to-primary/10">
         <div className="container max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
@@ -65,14 +60,12 @@ const Index = () => {
           </div>
         </div>
         
-        {/* Abstract decorative elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
           <div className="absolute top-1/4 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/4 right-10 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
         </div>
       </section>
       
-      {/* Overview Section */}
       <Section 
         id="overview" 
         title="Understanding Algorithmic Bias in Hiring"
@@ -114,7 +107,6 @@ const Index = () => {
         </div>
       </Section>
       
-      {/* Case Studies Section */}
       <Section 
         id="case-studies" 
         title="Real-World Case Studies"
@@ -166,16 +158,14 @@ const Index = () => {
         </div>
       </Section>
       
-      {/* Simulation Section */}
       <Section 
         id="simulation" 
         title="Interactive Bias Simulation"
-        subtitle="Experience how AI hiring systems might evaluate resumes differently based on various factors."
+        subtitle="Experience how AI hiring systems might evaluate your resume based on actual content and identify potential bias triggers."
       >
         <ResumeAnalyzer />
       </Section>
       
-      {/* Understanding Mechanisms Section */}
       <Section 
         id="mechanisms" 
         title="How Bias Enters AI Systems"
@@ -185,7 +175,6 @@ const Index = () => {
         <BiasExplanation />
       </Section>
       
-      {/* Legal and Ethical Section */}
       <Section 
         id="legal" 
         title="Legal and Ethical Considerations"
@@ -194,7 +183,6 @@ const Index = () => {
         <LegalConsiderations />
       </Section>
       
-      {/* Solutions Section */}
       <Section 
         id="solutions" 
         title="Solutions and Best Practices"
@@ -246,7 +234,6 @@ const Index = () => {
         </div>
       </Section>
       
-      {/* Conclusion Section */}
       <Section 
         id="conclusion" 
         title="Conclusion and Call to Action"

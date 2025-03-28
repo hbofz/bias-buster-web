@@ -33,8 +33,23 @@ serve(async (req) => {
     }
 
     console.log(`Analyzing resume for scenario: ${scenarioId}`);
+    console.log(`Resume content length: ${resumeText.length} characters`);
 
-    // Call OpenAI API to analyze the resume
+    // Enhanced system prompt that emphasizes using the actual resume content
+    const systemPrompt = `You are an expert in algorithmic bias in hiring systems. Your task is to analyze the provided resume and identify potential areas where bias could occur in automated hiring systems. 
+    
+    IMPORTANT: Base your analysis ONLY on the actual content provided in the resume. Do not make up or invent any information not present in the resume. If the resume doesn't contain sufficient information in certain areas, acknowledge this limitation rather than making assumptions.
+    
+    Analyze the following specific elements:
+    1. Language and terminology used
+    2. Education and credentials formatting
+    3. Employment history presentation
+    4. Skills representation
+    5. Overall structure and organization
+    
+    Be specific in your feedback and cite exact phrases or sections from the resume.`;
+
+    // Call OpenAI API to analyze the resume with enhanced prompt
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -46,7 +61,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert in algorithmic bias in hiring systems. Your task is to simulate how a biased AI hiring system would evaluate a resume.`
+            content: systemPrompt
           },
           {
             role: 'user',
@@ -54,7 +69,7 @@ serve(async (req) => {
           }
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.7,
+        temperature: 0.4, // Lower temperature for more factual, less creative responses
       }),
     });
 
@@ -68,19 +83,34 @@ serve(async (req) => {
     }
 
     const openAIData = await openAIResponse.json();
+    console.log('OpenAI response received');
+    
     let analysis;
     
     try {
       // Parse the response content as JSON
       analysis = JSON.parse(openAIData.choices[0].message.content);
+      
+      // Validate that the response contains required fields
+      if (!analysis.biasScore || !analysis.feedback || !analysis.recommendations) {
+        throw new Error('Response missing required fields');
+      }
+      
+      // Log analysis summary for debugging
+      console.log(`Generated bias score: ${analysis.biasScore}`);
+      console.log(`Feedback items: ${analysis.feedback.length}`);
+      console.log(`Recommendations: ${analysis.recommendations.length}`);
+      
     } catch (e) {
       console.error('Error parsing OpenAI response as JSON:', e);
-      // If parsing fails, use the raw response with some defaults
-      analysis = {
-        biasScore: Math.floor(Math.random() * 70) + 30,
-        feedback: [openAIData.choices[0].message.content.substring(0, 200)],
-        recommendations: ["Improve resume format", "Use more inclusive language"]
-      };
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to parse AI response', 
+          details: e.message,
+          rawResponse: openAIData.choices[0].message.content.substring(0, 200) + "..." 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     return new Response(
