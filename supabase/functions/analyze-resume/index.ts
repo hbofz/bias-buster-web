@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,11 +8,6 @@ const corsHeaders = {
 };
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') || '';
-
-// Initialize the Supabase client
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -88,32 +83,14 @@ serve(async (req) => {
       };
     }
 
-    // Store the analysis in Supabase
-    const { data: savedAnalysis, error } = await supabase
-      .from('resume_analyses')
-      .insert({
-        user_fingerprint: userFingerprint,
-        resume_filename: filename,
-        scenario_id: scenarioId,
-        bias_score: analysis.biasScore || 50,
-        feedback: analysis.feedback || [],
-        recommendations: analysis.recommendations || []
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase insert error:', error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to save analysis results', details: error }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     return new Response(
       JSON.stringify({ 
         success: true, 
-        analysis: savedAnalysis 
+        analysis: {
+          bias_score: analysis.biasScore,
+          feedback: analysis.feedback,
+          recommendations: analysis.recommendations
+        }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
