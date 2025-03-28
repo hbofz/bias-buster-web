@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -347,7 +348,7 @@ const ResumeAnalyzer: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <Alert variant="outline" className="bg-primary/5 border-primary/20">
+              <Alert variant="default" className="bg-primary/5 border-primary/20">
                 <InfoIcon className="h-4 w-4" />
                 <AlertTitle>How this works</AlertTitle>
                 <AlertDescription>
@@ -436,7 +437,7 @@ const ResumeAnalyzer: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <Alert variant="outline" className="bg-primary/5 border-primary/20">
+              <Alert variant="default" className="bg-primary/5 border-primary/20">
                 <InfoIcon className="h-4 w-4" />
                 <AlertTitle>How this works</AlertTitle>
                 <AlertDescription>
