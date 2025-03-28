@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { v4 as uuidv4 } from 'uuid';
 import { demoResumes } from '@/data/demoResumes';
 import ResumeViewer from './ResumeViewer';
+import { supabase } from '@/integrations/supabase/client';
 
 // Helper function to read file content
 const readFileAsText = (file: File): Promise<string> => {
@@ -194,26 +195,20 @@ const ResumeAnalyzer: React.FC = () => {
     setAnalysisProgress(0);
     
     try {
-      const response = await fetch('https://lovable-six.supabase.co/functions/v1/analyze-resume', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Using Supabase's functions.invoke instead of a direct fetch
+      const { data, error } = await supabase.functions.invoke('analyze-resume', {
+        body: {
           resumeText: state.fileContent,
           scenarioId: state.scenarioId,
           prompt: `Analyze this resume for ${state.scenarioId === 'amazon' ? 'gender bias' : 'socioeconomic bias'} potential`,
           userFingerprint: state.userFingerprint,
           filename: state.file?.name || 'demo-resume.txt',
-        }),
+        },
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Analysis failed');
+      if (error) {
+        throw new Error(error.message || 'Analysis failed');
       }
-      
-      const data = await response.json();
       
       if (data.success && data.analysis) {
         setAnalysisProgress(100);
