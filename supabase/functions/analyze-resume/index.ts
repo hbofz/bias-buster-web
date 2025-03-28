@@ -35,6 +35,85 @@ serve(async (req) => {
     console.log(`Analyzing resume for scenario: ${scenarioId}`);
     console.log(`Resume content length: ${resumeText.length} characters`);
     
+    // Check if we're dealing with one of our demo resumes
+    // For demo resumes, provide pre-configured responses for consistency
+    const isDemoMale = resumeText.includes("JOHN SMITH") && resumeText.includes("Results-driven software engineer");
+    const isDemoFemale = resumeText.includes("SARAH JOHNSON") && resumeText.includes("Dedicated software engineer");
+    const isDemoPrivileged = resumeText.includes("ALEXANDER WESTFIELD") && resumeText.includes("Harvard University");
+    const isDemoDisadvantaged = resumeText.includes("MIGUEL RODRIGUEZ") && resumeText.includes("First-generation college student");
+    
+    // Demo analysis results
+    if (scenarioId === "amazon") {
+      if (isDemoMale) {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            analysis: {
+              bias_score: 45,
+              feedback: [
+                "Uses masculine-coded language like 'crushing complex technical challenges' and 'dominating in fast-paced environments'",
+                "Contains aggressive action verbs such as 'dominated hackathon competition' and 'aggressively optimized'",
+                "Leadership described in competitive terms: 'Led a team', 'Spearheaded the migration', 'Captain of Programming Team'",
+                "Resume emphasizes individual achievement and competition over collaboration"
+              ]
+            }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else if (isDemoFemale) {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            analysis: {
+              bias_score: 75,
+              feedback: [
+                "Uses collaborative language like 'collaborating on complex technical challenges' rather than assertive language",
+                "Contains supportive action verbs such as 'helped implement', 'assisted in development' rather than 'led' or 'executed'",
+                "Includes women-associated terms like 'Mills College (Women's College)' and 'Women in Computer Science Club'",
+                "Uses passive descriptors like 'contributed to' instead of directly claiming achievements"
+              ]
+            }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else if (scenarioId === "socioeconomic") {
+      if (isDemoPrivileged) {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            analysis: {
+              bias_score: 45,
+              feedback: [
+                "Education from prestigious institutions: 'Harvard University' and 'Stanford Graduate School of Business'",
+                "High-status positions at elite organizations: 'Goldman Sachs', 'McKinsey & Company', 'Apple'",
+                "Exclusive activities that suggest wealth: 'Competitive Sailing, San Francisco Yacht Club' and 'Founding Donor, Education Access Fund ($10,000 commitment)'",
+                "International experience and multiple language proficiencies: 'Semester abroad at Oxford University' and 'English (native), French (fluent), Mandarin (conversational)'"
+              ]
+            }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else if (isDemoDisadvantaged) {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            analysis: {
+              bias_score: 75,
+              feedback: [
+                "First-generation college student notation indicates potential socioeconomic disadvantage",
+                "Community college education: 'City College of San Francisco' rather than an elite institution",
+                "Work experience during education: 'Worked 30 hours/week during studies to support tuition'",
+                "Non-elite employment history: 'QUICK MART, San Francisco, CA, Shift Supervisor' shows retail work rather than prestigious internships"
+              ]
+            }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    
+    // If not one of our demo resumes, proceed with AI analysis
     // Create specific system prompts based on the scenario
     let systemPrompt;
     

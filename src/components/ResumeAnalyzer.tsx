@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { InfoIcon, Upload, AlertCircle, FileText, Cpu } from 'lucide-react';
+import { InfoIcon, Upload, AlertCircle, FileText, Cpu, CheckCircle, Clock, BarChart2, Award, BookOpen, GraduationCap } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -29,6 +29,20 @@ const getScoreColor = (score: number): string => {
   if (score <= 50) return 'bg-green-500';
   if (score <= 70) return 'bg-yellow-500';
   return 'bg-red-500';
+};
+
+// Get the text color variant based on score
+const getScoreTextColor = (score: number): string => {
+  if (score <= 50) return 'text-green-600';
+  if (score <= 70) return 'text-yellow-600';
+  return 'text-red-600';
+};
+
+// Get the background color variant based on score
+const getScoreBgColor = (score: number): string => {
+  if (score <= 50) return 'bg-green-50';
+  if (score <= 70) return 'bg-yellow-50';
+  return 'bg-red-50';
 };
 
 // Generate explanation based on score
@@ -520,8 +534,11 @@ const ResumeAnalyzer: React.FC = () => {
       
       {state.fileContent && (
         <Card className="border shadow-card overflow-hidden bg-gradient-to-br from-background to-muted/10">
-          <CardHeader className="pb-3">
-            <CardTitle>Resume Analysis</CardTitle>
+          <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 via-background to-primary/5">
+            <CardTitle className="flex items-center gap-2">
+              <BarChart2 className="h-5 w-5 text-primary" />
+              Resume Analysis
+            </CardTitle>
             <CardDescription>
               {state.scenarioId === 'amazon' 
                 ? 'Analyzing resume for potential gender bias triggers in AI hiring algorithms'
@@ -530,7 +547,7 @@ const ResumeAnalyzer: React.FC = () => {
             </CardDescription>
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="p-6">
             {state.isAnalyzing ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-2">
@@ -538,64 +555,101 @@ const ResumeAnalyzer: React.FC = () => {
                   <span className="text-sm">{Math.round(analysisProgress)}%</span>
                 </div>
                 <Progress value={analysisProgress} className="h-2" />
-                <div className="bg-muted/30 p-4 rounded-md animate-pulse">
-                  <div className="flex items-center">
-                    <Cpu className="mr-2 h-5 w-5 text-primary/70" />
-                    <p className="text-sm text-muted-foreground">
-                      Our AI is analyzing the resume content, examining key patterns and indicators...
-                    </p>
+                <div className="bg-muted/30 p-6 rounded-md animate-pulse border">
+                  <div className="flex items-start gap-3">
+                    <Cpu className="h-6 w-6 text-primary/70 mt-1 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-medium text-sm mb-2">AI Analysis in Progress</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Our AI is examining your resume for potential bias triggers, analyzing:
+                      </p>
+                      <ul className="mt-3 space-y-2 text-sm">
+                        <li className="flex items-center">
+                          <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <span>Language patterns and terminology</span>
+                        </li>
+                        <li className="flex items-center">
+                          <BookOpen className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <span>Educational credentials presentation</span>
+                        </li>
+                        <li className="flex items-center">
+                          <Award className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <span>Achievement descriptions and highlights</span>
+                        </li>
+                        <li className="flex items-center">
+                          <GraduationCap className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <span>Indicators of privilege or disadvantage</span>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
             ) : currentResult ? (
               <div className="space-y-6 animate-slide-in">
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-medium">Bias Risk Score</h3>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold">{currentResult.bias_score}/100</span>
-                      <div className={`w-3 h-3 rounded-full ${getScoreColor(currentResult.bias_score)}`}></div>
+                <div className={`${getScoreBgColor(currentResult.bias_score)} p-6 rounded-lg border shadow-sm`}>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+                    <div className="flex items-center mb-3 md:mb-0">
+                      <div className={`w-14 h-14 rounded-full flex items-center justify-center ${getScoreTextColor(currentResult.bias_score)} bg-white shadow-sm font-bold text-xl mr-4`}>
+                        {currentResult.bias_score}
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-lg">Bias Risk Score</h3>
+                        <p className={`text-sm ${getScoreTextColor(currentResult.bias_score)} font-medium`}>
+                          {currentResult.bias_score <= 50 ? 'Low Risk' : currentResult.bias_score <= 70 ? 'Moderate Risk' : 'High Risk'}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      {currentResult.bias_score <= 50 ? (
+                        <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-amber-500 mr-2" />
+                      )}
+                      <span className="text-sm font-medium">
+                        {getScoreExplanation(currentResult.bias_score, state.scenarioId)}
+                      </span>
                     </div>
                   </div>
                   
                   <div className="relative pt-1">
-                    <div className="flex mb-2 items-center justify-between">
-                      <div>
-                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-green-100 text-green-800">
-                          Low Risk
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-red-100 text-red-800">
-                          High Risk
-                        </span>
-                      </div>
+                    <div className="mb-2 text-xs font-medium flex justify-between">
+                      <span>Low Algorithmic Bias Risk</span>
+                      <span>High Algorithmic Bias Risk</span>
                     </div>
-                    <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-muted/50">
+                    <div className="h-2 mb-4 flex rounded-full bg-gray-200 overflow-hidden">
                       <div
                         style={{ width: `${currentResult.bias_score}%` }}
-                        className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-500 ${getScoreColor(currentResult.bias_score)}`}
+                        className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-500 ease-in-out ${getScoreColor(currentResult.bias_score)}`}
                       ></div>
                     </div>
                   </div>
-                  
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {getScoreExplanation(currentResult.bias_score, state.scenarioId)}
-                  </p>
                 </div>
                 
-                <Separator />
-                
-                <div>
-                  <h3 className="font-medium mb-3">Potential Bias Triggers Identified</h3>
+                <div className="bg-white p-6 rounded-lg border shadow-sm">
+                  <h3 className="font-medium text-lg mb-4 flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-amber-500" />
+                    Potential Bias Triggers Identified
+                  </h3>
                   
                   {currentResult.feedback.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {currentResult.feedback.map((item, index) => (
-                        <div key={index} className="p-3 border rounded-md bg-muted/20">
-                          <div className="flex gap-2">
-                            <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm">{item}</p>
+                        <div key={index} className="p-4 border rounded-md bg-amber-50/50 hover:bg-amber-50 transition-colors">
+                          <div className="flex gap-3">
+                            <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0 mt-0.5">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <p className="text-sm">{item}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {state.scenarioId === 'amazon' 
+                                  ? 'This pattern may be interpreted differently based on gender stereotypes by hiring algorithms.'
+                                  : 'This element may signal socioeconomic background to hiring algorithms using pattern matching.'
+                                }
+                              </p>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -605,18 +659,28 @@ const ResumeAnalyzer: React.FC = () => {
                   )}
                 </div>
                 
-                <div className="mt-6">
-                  <Button onClick={analyzeResume} className="w-full">Re-Analyze Resume</Button>
+                <div className="bg-gradient-to-r from-primary/5 via-background to-primary/5 p-6 rounded-lg border">
+                  <h3 className="font-medium mb-3">AI Analysis Summary</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {state.scenarioId === 'amazon'
+                      ? 'Our AI has analyzed your resume for language patterns that might trigger gender bias in hiring algorithms. The analysis focused on action verbs, achievement descriptions, and gender indicators that could influence automated screening.'
+                      : 'Our AI has analyzed your resume for elements that might trigger socioeconomic bias in hiring algorithms. The analysis focused on educational institutions, address information, and activities that could indicate socioeconomic background.'
+                    }
+                  </p>
+                  <Button onClick={analyzeResume} className="w-full bg-gradient-to-r from-primary to-primary/90 hover:shadow-md transition-all">
+                    <Cpu className="mr-2 h-4 w-4" />
+                    Re-Analyze Resume
+                  </Button>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-4">
-                <Button onClick={analyzeResume} size="lg" className="animate-pulse bg-gradient-to-r from-primary to-primary/80 hover:shadow-glow">
-                  <Cpu className="mr-2 h-5 w-5" />
-                  Start Analysis
+              <div className="text-center py-8 px-4">
+                <Button onClick={analyzeResume} size="lg" className="animate-pulse bg-gradient-to-r from-primary to-primary/80 hover:shadow-xl transition-all px-8 py-6">
+                  <Cpu className="mr-3 h-5 w-5" />
+                  <span className="text-lg">Start Analysis</span>
                 </Button>
-                <p className="text-sm text-muted-foreground mt-3">
-                  Click to analyze the resume for potential {state.scenarioId === 'amazon' ? 'gender' : 'socioeconomic'} bias patterns
+                <p className="text-sm text-muted-foreground mt-4 max-w-md mx-auto">
+                  Click to analyze the resume for potential {state.scenarioId === 'amazon' ? 'gender' : 'socioeconomic'} bias patterns that might affect your chances in automated hiring systems
                 </p>
               </div>
             )}
