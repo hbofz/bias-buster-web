@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -28,6 +29,9 @@ const Index = () => {
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
     handleScroll();
+    
+    // Clear localStorage on page load to reset the analyzer state
+    localStorage.removeItem('resumeAnalyzerState');
     
     return () => {
       window.removeEventListener('scroll', handleScroll);

@@ -133,8 +133,8 @@ const BiasExplanation: React.FC = () => {
   };
   
   return (
-    <div className="w-full max-w-3xl mx-auto opacity-0 animate-fade-in-up border rounded-lg overflow-hidden">
-      <div className="flex bg-muted">
+    <div className="w-full max-w-3xl mx-auto opacity-0 animate-fade-in shadow-card border rounded-lg overflow-hidden bg-gradient-to-br from-background to-muted/20">
+      <div className="flex bg-muted/30">
         {steps.map((step, index) => (
           <button
             key={index}
@@ -163,12 +163,14 @@ const BiasExplanation: React.FC = () => {
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 0}
+            className="hover:shadow-soft"
           >
             Previous
           </Button>
           <Button
             onClick={handleNext}
             disabled={currentStep === steps.length - 1}
+            className="hover:shadow-glow"
           >
             Next
           </Button>
