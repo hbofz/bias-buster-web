@@ -83,12 +83,12 @@ serve(async (req) => {
           JSON.stringify({ 
             success: true, 
             analysis: {
-              bias_score: 45,
+              bias_score: 30,
               feedback: [
-                "Education from prestigious institutions: 'Harvard University' and 'Stanford Graduate School of Business'",
-                "High-status positions at elite organizations: 'Goldman Sachs', 'McKinsey & Company', 'Apple'",
-                "Exclusive activities that suggest wealth: 'Competitive Sailing, San Francisco Yacht Club' and 'Founding Donor, Education Access Fund ($10,000 commitment)'",
-                "International experience and multiple language proficiencies: 'Semester abroad at Oxford University' and 'English (native), French (fluent), Mandarin (conversational)'"
+                "Elite education markers: 'Harvard University' and 'Stanford Graduate School of Business'",
+                "Prestigious employment history: 'Goldman Sachs', 'McKinsey & Company', 'Apple'",
+                "High socioeconomic status indicators: 'Competitive Sailing, San Francisco Yacht Club' and 'Founding Donor, Education Access Fund ($10,000 commitment)'",
+                "International experience opportunities: 'Semester abroad at Oxford University' and 'English (native), French (fluent), Mandarin (conversational)'"
               ]
             }
           }),
@@ -163,12 +163,12 @@ Consider how socioeconomic bias emerges in hiring algorithms:
 - Network access is often tied to socioeconomic status
 
 Your response must be a JSON object with two properties:
-1) biasScore: a number between 40-85 representing potential socioeconomic bias impact (higher means more concerning)
+1) biasScore: a number between 30-85 representing potential socioeconomic bias impact (higher means more concerning)
 2) feedback: an array of 3-4 specific elements from the resume that might trigger socioeconomic bias, DIRECTLY QUOTING actual text from the resume
 
 You MUST reference actual content from the resume. If you cannot find enough material to analyze, mention this in your feedback rather than making things up.
 
-For resumes with prestigious schools, addresses in wealthy areas, and expensive activities, the biasScore should generally be lower (40-55) as they match privileged patterns.
+For resumes with prestigious schools, addresses in wealthy areas, and expensive activities, the biasScore should generally be lower (30-45) as they match privileged patterns.
 For resumes with less prestigious schools, addresses in less wealthy areas, and fewer elite experiences, the biasScore should generally be higher (65-80) as they may be filtered out.`;
     } else {
       systemPrompt = `You are an expert in algorithmic bias in hiring systems tasked with analyzing this specific resume.
