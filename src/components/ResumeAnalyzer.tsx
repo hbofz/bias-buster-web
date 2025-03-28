@@ -117,6 +117,60 @@ const ResumeAnalyzer: React.FC = () => {
     setProgress(0);
   };
   
+  const extractTextFromFile = async (selectedFile: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        if (!event.target || !event.target.result) {
+          reject(new Error("Failed to read file"));
+          return;
+        }
+        
+        let text = "";
+        
+        // Handle text based on file type
+        if (selectedFile.type === 'text/plain') {
+          // For plain text files, just use the result as is
+          text = event.target.result as string;
+        } else if (selectedFile.type === 'application/pdf') {
+          // For PDFs, read as array buffer and convert to base64 string
+          if (typeof event.target.result === 'string') {
+            text = event.target.result;
+          } else {
+            // Convert ArrayBuffer to string
+            const uint8Array = new Uint8Array(event.target.result as ArrayBuffer);
+            let binaryString = '';
+            for (let i = 0; i < uint8Array.length; i++) {
+              binaryString += String.fromCharCode(uint8Array[i]);
+            }
+            text = binaryString;
+          }
+        } else if (selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+          // For DOCX files, extract text as string
+          if (typeof event.target.result === 'string') {
+            text = event.target.result;
+          } else {
+            const textDecoder = new TextDecoder();
+            text = textDecoder.decode(event.target.result as ArrayBuffer);
+          }
+        }
+        
+        resolve(text);
+      };
+      
+      reader.onerror = () => {
+        reject(new Error("Error reading file"));
+      };
+      
+      if (selectedFile.type === 'application/pdf') {
+        reader.readAsBinaryString(selectedFile);
+      } else {
+        reader.readAsText(selectedFile);
+      }
+    });
+  };
+  
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -128,17 +182,9 @@ const ResumeAnalyzer: React.FC = () => {
         setUploadStatus('uploading');
         setProgress(25);
         
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setProgress(75);
-          
-          if (typeof event.target?.result === 'string') {
-            setResumeText(event.target.result);
-          } else {
-            const textDecoder = new TextDecoder();
-            setResumeText(textDecoder.decode(event.target?.result as ArrayBuffer));
-          }
-          
+        try {
+          const extractedText = await extractTextFromFile(selectedFile);
+          setResumeText(extractedText);
           setUploadStatus('ready');
           setProgress(100);
           
@@ -146,22 +192,14 @@ const ResumeAnalyzer: React.FC = () => {
             title: "Resume processed successfully",
             description: "Your resume is ready for analysis",
           });
-        };
-        
-        reader.onerror = () => {
+        } catch (error) {
+          console.error("Error processing file:", error);
           setUploadStatus('error');
           toast({
             title: "Error processing file",
-            description: "Could not read file content",
+            description: "Could not read file content. Try using a plain text format.",
             variant: "destructive"
           });
-        };
-        
-        if (selectedFile.type === 'application/pdf' || 
-            selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-          reader.readAsText(selectedFile);
-        } else {
-          reader.readAsText(selectedFile);
         }
       } else {
         setUploadStatus('error');

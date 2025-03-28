@@ -1,7 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import * as pdfjs from "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/+esm";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,34 +9,7 @@ const corsHeaders = {
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
-// Initialize PDF.js
-pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.worker.min.js";
-
-// Function to extract text from PDF data
-async function extractTextFromPDF(pdfData) {
-  try {
-    // Load the PDF document
-    const loadingTask = pdfjs.getDocument({ data: pdfData });
-    const pdf = await loadingTask.promise;
-    
-    console.log(`PDF loaded with ${pdf.numPages} pages`);
-    
-    // Extract text from all pages
-    let fullText = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map(item => item.str).join(' ');
-      fullText += pageText + '\n';
-    }
-    
-    console.log(`Successfully extracted ${fullText.length} characters from PDF`);
-    return fullText;
-  } catch (error) {
-    console.error('Error extracting text from PDF:', error);
-    return null;
-  }
-}
+// Note: Removed PDF.js direct implementation as it's causing issues in Deno runtime
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -65,41 +37,16 @@ serve(async (req) => {
     console.log(`Analyzing resume for scenario: ${scenarioId}`);
     console.log(`Resume content length: ${resumeText.length} characters`);
     
-    // Process the resume text based on format
-    let extractedText = resumeText;
-    
-    // Check if this is a PDF (starts with %PDF)
-    if (resumeText.startsWith('%PDF')) {
-      console.log("Detected PDF content, attempting to extract text...");
-      
-      try {
-        // Convert the PDF string to binary data
-        const binaryData = new Uint8Array(resumeText.length);
-        for (let i = 0; i < resumeText.length; i++) {
-          binaryData[i] = resumeText.charCodeAt(i);
-        }
-        
-        // Extract text from the PDF
-        const pdfText = await extractTextFromPDF(binaryData);
-        
-        if (pdfText && pdfText.trim().length > 0) {
-          console.log(`Successfully extracted text from PDF: ${pdfText.substring(0, 100)}...`);
-          extractedText = pdfText;
-        } else {
-          console.log("PDF text extraction failed or returned empty text, using original content");
-        }
-      } catch (error) {
-        console.error("Error processing PDF content:", error);
-      }
-    }
-    
+    // We won't try to process PDFs server-side anymore, as PDF.js is causing issues
+    // Instead, we'll use the resumeText as provided by the frontend
+
     // Create specific system prompts based on the scenario
     let systemPrompt;
     
     if (scenarioId === "amazon") {
       systemPrompt = `You are an AI tool that analyzes resumes for potential gender bias in hiring algorithms.
 
-IMPORTANT: Your analysis MUST be based EXCLUSIVELY on the content provided in this specific resume. DO NOT make up or assume any information not present in the resume. If you can't find specific elements to analyze, acknowledge this fact in your feedback.
+EXTREMELY IMPORTANT: Your analysis MUST be based EXCLUSIVELY on the content provided in this specific resume. DO NOT make up or assume any information not present in the resume. If you can't find specific elements to analyze, acknowledge this fact in your feedback.
 
 For this specific scenario about gender bias:
 1. Analyze terminology and language patterns that might trigger algorithmic gender bias
@@ -112,11 +59,11 @@ Your response must be a JSON object with three properties:
 2) feedback: an array of 3-4 specific elements from the resume that might trigger gender bias, DIRECTLY QUOTING actual text from the resume
 3) recommendations: an array of 4-5 actionable recommendations to reduce gender bias signals
 
-Be concrete and specific in your analysis - reference actual content from the resume rather than making general statements.`;
+You MUST reference actual content from the resume. If you cannot find enough material to analyze, mention this in your feedback and recommendations rather than making things up.`;
     } else if (scenarioId === "keyword") {
       systemPrompt = `You are an AI tool that analyzes resumes for how they might be processed by keyword-based Applicant Tracking Systems (ATS).
 
-IMPORTANT: Your analysis MUST be based EXCLUSIVELY on the content provided in this specific resume. DO NOT make up or assume any information not present in the resume. If you can't find specific elements to analyze, acknowledge this fact in your feedback.
+EXTREMELY IMPORTANT: Your analysis MUST be based EXCLUSIVELY on the content provided in this specific resume. DO NOT make up or assume any information not present in the resume. If you can't find specific elements to analyze, acknowledge this fact in your feedback.
 
 For this specific scenario about keyword-based ATS filtering:
 1. Analyze industry-specific terminology density and keyword optimization
@@ -129,11 +76,11 @@ Your response must be a JSON object with three properties:
 2) feedback: an array of 3-4 specific elements from the resume that might cause filtering issues, DIRECTLY QUOTING actual text from the resume
 3) recommendations: an array of 4-5 actionable recommendations to improve ATS compatibility
 
-Be concrete and specific in your analysis - reference actual content from the resume rather than making general statements.`;
+You MUST reference actual content from the resume. If you cannot find enough material to analyze, mention this in your feedback and recommendations rather than making things up.`;
     } else {
       systemPrompt = `You are an expert in algorithmic bias in hiring systems tasked with analyzing this specific resume.
       
-IMPORTANT: Your analysis MUST be based EXCLUSIVELY on the content provided in this specific resume. DO NOT make up or assume any information not present in the resume. If you can't find specific elements to analyze, acknowledge this fact in your feedback.
+EXTREMELY IMPORTANT: Your analysis MUST be based EXCLUSIVELY on the content provided in this specific resume. DO NOT make up or assume any information not present in the resume. If you can't find specific elements to analyze, acknowledge this fact in your feedback.
 
 Analyze the following specific elements from the resume:
 1. Language and terminology used
@@ -146,8 +93,16 @@ Your response must be a JSON object with three properties:
 2) feedback: an array of 3-4 specific elements from the resume that might trigger bias, DIRECTLY QUOTING actual text from the resume
 3) recommendations: an array of 4-5 actionable recommendations to reduce bias triggers
 
-Be concrete and specific in your analysis - reference actual content from the resume rather than making general statements.`;
+You MUST reference actual content from the resume. If you cannot find enough material to analyze, mention this in your feedback and recommendations rather than making things up.`;
     }
+
+    // Trim the resume text if it's too large
+    const maxLength = 15000; // Limit to 15,000 characters to prevent token limits
+    const trimmedText = resumeText.length > maxLength ? 
+      resumeText.substring(0, maxLength) + "... [trimmed for length]" : 
+      resumeText;
+
+    console.log(`Using ${trimmedText.length} characters for analysis`);
 
     // Call OpenAI API to analyze the resume
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -165,7 +120,7 @@ Be concrete and specific in your analysis - reference actual content from the re
           },
           {
             role: 'user',
-            content: `Please analyze this resume for ${scenarioId === "amazon" ? "gender bias" : "keyword-based ATS filtering"} potential. Here's the full text content of the resume:\n\n${extractedText}`
+            content: `Please analyze this resume for ${scenarioId === "amazon" ? "gender bias" : "keyword-based ATS filtering"} potential. Here is the full text content of the resume: "${trimmedText}"`
           }
         ],
         response_format: { type: 'json_object' },
@@ -205,6 +160,7 @@ Be concrete and specific in your analysis - reference actual content from the re
       console.log(`Generated bias score: ${analysis.biasScore}`);
       console.log(`Feedback items: ${analysis.feedback.length}`);
       console.log(`Recommendations: ${analysis.recommendations.length}`);
+      console.log(`First feedback item: ${analysis.feedback[0].substring(0, 50)}...`);
       
     } catch (e) {
       console.error('Error parsing OpenAI response as JSON:', e);
