@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -11,7 +10,7 @@ import SolutionCard from '@/components/SolutionCard';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ChevronDown } from 'lucide-react';
-import { Shield, Database, LineChart, Brain, Users, Globe } from 'lucide-react';
+import { Shield, Database, LineChart, Brain, Users, Globe, Code, AlertTriangle, Compass } from 'lucide-react';
 
 const Index = () => {
   const handleScroll = () => {
@@ -38,6 +37,209 @@ const Index = () => {
     };
   }, []);
   
+  const solutionsData = [
+    {
+      icon: <Shield size={24} />,
+      title: "Regular Bias Audits",
+      description: "Conduct thorough assessments of AI systems before deployment and at regular intervals to detect potential bias issues early.",
+      extendedDescription: "Bias audits involve systematic testing of AI systems with diverse datasets to identify patterns of discrimination or unfair outcomes.",
+      bulletPoints: [
+        "Use statistical methods to measure disparate impact across protected groups",
+        "Test with both synthetic and real-world data",
+        "Document findings and implemented mitigations for transparency"
+      ],
+      implementationSteps: [
+        {
+          title: "Pre-deployment Assessment",
+          description: "Test system with diverse datasets before release"
+        },
+        {
+          title: "Periodic Reviews",
+          description: "Schedule regular audits at 3-6 month intervals"
+        },
+        {
+          title: "Independent Verification",
+          description: "Engage third-party auditors for unbiased evaluation"
+        }
+      ]
+    },
+    {
+      icon: <Database size={24} />,
+      title: "Diverse Training Data",
+      description: "Ensure that data used to train AI hiring systems is diverse and representative of the broader population you want to hire.",
+      extendedDescription: "The quality and diversity of training data directly impacts how AI systems learn to evaluate candidates. Biased data leads to biased outcomes.",
+      bulletPoints: [
+        "Analyze training data for demographic representation",
+        "Augment underrepresented groups in training datasets",
+        "Balance historical data with synthetic balanced datasets"
+      ],
+      implementationSteps: [
+        {
+          title: "Data Audit",
+          description: "Analyze existing datasets for representation issues"
+        },
+        {
+          title: "Augmentation",
+          description: "Supplement with additional diverse samples"
+        },
+        {
+          title: "Validation",
+          description: "Verify balanced performance across demographics"
+        }
+      ]
+    },
+    {
+      icon: <LineChart size={24} />,
+      title: "Transparent Algorithms",
+      description: "Use explainable AI methods that allow for understanding how decisions are made rather than black-box approaches.",
+      extendedDescription: "Explainable AI (XAI) provides insights into decision-making processes, enabling stakeholders to understand and trust the system's outcomes.",
+      bulletPoints: [
+        "Implement feature importance analysis to show which factors influenced decisions",
+        "Create plain-language explanations of AI decision processes",
+        "Provide visual representations of decision paths"
+      ],
+      implementationSteps: [
+        {
+          title: "Model Selection",
+          description: "Choose inherently interpretable models when possible"
+        },
+        {
+          title: "Explanation Layer",
+          description: "Add post-hoc explanation capabilities to complex models"
+        },
+        {
+          title: "User Interface",
+          description: "Design intuitive visualizations of decision factors"
+        }
+      ]
+    },
+    {
+      icon: <Brain size={24} />,
+      title: "Human Oversight",
+      description: "Maintain meaningful human involvement in the hiring process. AI should support, not replace, human decision-making.",
+      extendedDescription: "Human-in-the-loop approaches combine the efficiency of AI with human judgment, creating more fair and accountable hiring processes.",
+      bulletPoints: [
+        "Establish clear review protocols for AI recommendations",
+        "Train humans to effectively oversee and question AI decisions",
+        "Create override mechanisms for edge cases and unusual situations"
+      ],
+      implementationSteps: [
+        {
+          title: "Define Boundaries",
+          description: "Clarify where AI assists vs. where humans decide"
+        },
+        {
+          title: "Reviewer Training",
+          description: "Educate human reviewers on bias recognition"
+        },
+        {
+          title: "Feedback Loops",
+          description: "Establish channels for human input to improve AI"
+        }
+      ]
+    },
+    {
+      icon: <Users size={24} />,
+      title: "Diverse Development Teams",
+      description: "Ensure that teams developing AI hiring tools include people from diverse backgrounds who can identify potential bias issues.",
+      extendedDescription: "Homogeneous teams often have blind spots when it comes to bias. Diverse perspectives lead to more inclusive product design.",
+      bulletPoints: [
+        "Include team members from different demographic backgrounds",
+        "Incorporate perspectives from various disciplines (ethics, law, social sciences)",
+        "Engage end users from diverse backgrounds in the development process"
+      ],
+      implementationSteps: [
+        {
+          title: "Team Composition",
+          description: "Recruit diverse talent across roles and levels"
+        },
+        {
+          title: "Inclusive Culture",
+          description: "Create environment where all voices are heard"
+        },
+        {
+          title: "External Partnerships",
+          description: "Collaborate with diversity-focused organizations"
+        }
+      ]
+    },
+    {
+      icon: <Code size={24} />,
+      title: "Bias Mitigation Algorithms",
+      description: "Implement specific technical approaches designed to reduce bias in AI models during development and deployment.",
+      extendedDescription: "Several mathematical techniques can help reduce bias in machine learning pipelines, from pre-processing to post-processing stages.",
+      bulletPoints: [
+        "Pre-processing methods like reweighing and disparate impact removal",
+        "In-processing constraints during model training",
+        "Post-processing calibration to ensure fair outcomes across groups"
+      ],
+      implementationSteps: [
+        {
+          title: "Algorithm Selection",
+          description: "Choose appropriate debiasing technique for your context"
+        },
+        {
+          title: "Implementation",
+          description: "Apply bias mitigation at multiple pipeline stages"
+        },
+        {
+          title: "Evaluation",
+          description: "Measure effectiveness through fairness metrics"
+        }
+      ]
+    },
+    {
+      icon: <AlertTriangle size={24} />,
+      title: "Ethical Red Teams",
+      description: "Establish specialized teams tasked with actively trying to find ways the AI system could produce biased or harmful outcomes.",
+      extendedDescription: "Red teams apply adversarial thinking to identify potential issues before they impact real users, improving system robustness.",
+      bulletPoints: [
+        "Conduct structured challenges to test system limitations",
+        "Simulate edge cases and potential misuse scenarios",
+        "Document and address vulnerabilities systematically"
+      ],
+      implementationSteps: [
+        {
+          title: "Team Formation",
+          description: "Assemble diverse experts with critical thinking skills"
+        },
+        {
+          title: "Testing Protocols",
+          description: "Develop comprehensive scenarios to evaluate system"
+        },
+        {
+          title: "Remediation Process",
+          description: "Create clear paths to address identified issues"
+        }
+      ]
+    },
+    {
+      icon: <Compass size={24} />,
+      title: "Ethical Guidelines",
+      description: "Develop and adhere to clear ethical principles specifically designed for AI in hiring contexts.",
+      extendedDescription: "Ethical guidelines provide a framework for making consistent decisions about AI development and use in recruitment.",
+      bulletPoints: [
+        "Establish clear principles prioritizing fairness and non-discrimination",
+        "Create practical decision-making frameworks for development teams",
+        "Review and update guidelines as technology and society evolve"
+      ],
+      implementationSteps: [
+        {
+          title: "Principles Development",
+          description: "Define core values with stakeholder input"
+        },
+        {
+          title: "Documentation",
+          description: "Create accessible reference materials for teams"
+        },
+        {
+          title: "Integration",
+          description: "Embed ethics checkpoints in development process"
+        }
+      ]
+    }
+  ];
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -194,47 +396,18 @@ const Index = () => {
         className="bg-muted/30"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <SolutionCard
-            icon={<Shield size={24} />}
-            title="Regular Bias Audits"
-            description="Conduct thorough assessments of AI systems before deployment and at regular intervals to detect potential bias issues early."
-            index={0}
-          />
-          
-          <SolutionCard
-            icon={<Database size={24} />}
-            title="Diverse Training Data"
-            description="Ensure that data used to train AI hiring systems is diverse and representative of the broader population you want to hire."
-            index={1}
-          />
-          
-          <SolutionCard
-            icon={<LineChart size={24} />}
-            title="Transparent Algorithms"
-            description="Use explainable AI methods that allow for understanding how decisions are made rather than black-box approaches."
-            index={2}
-          />
-          
-          <SolutionCard
-            icon={<Brain size={24} />}
-            title="Human Oversight"
-            description="Maintain meaningful human involvement in the hiring process. AI should support, not replace, human decision-making."
-            index={3}
-          />
-          
-          <SolutionCard
-            icon={<Users size={24} />}
-            title="Diverse Development Teams"
-            description="Ensure that teams developing AI hiring tools include people from diverse backgrounds who can identify potential bias issues."
-            index={4}
-          />
-          
-          <SolutionCard
-            icon={<Globe size={24} />}
-            title="Inclusive Design Principles"
-            description="Build AI systems with inclusion as a foundational principle, not as an afterthought or compliance requirement."
-            index={5}
-          />
+          {solutionsData.slice(0, 8).map((solution, index) => (
+            <SolutionCard
+              key={index}
+              icon={solution.icon}
+              title={solution.title}
+              description={solution.description}
+              index={index}
+              extendedDescription={solution.extendedDescription}
+              bulletPoints={solution.bulletPoints}
+              implementationSteps={solution.implementationSteps}
+            />
+          ))}
         </div>
       </Section>
       

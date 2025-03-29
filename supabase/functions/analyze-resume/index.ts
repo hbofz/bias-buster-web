@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
@@ -49,7 +48,7 @@ serve(async (req) => {
           JSON.stringify({ 
             success: true, 
             analysis: {
-              bias_score: 45,
+              bias_score: 35,
               feedback: [
                 "Uses masculine-coded language like 'crushing complex technical challenges' and 'dominating in fast-paced environments'",
                 "Contains aggressive action verbs such as 'dominated hackathon competition' and 'aggressively optimized'",
@@ -83,7 +82,7 @@ serve(async (req) => {
           JSON.stringify({ 
             success: true, 
             analysis: {
-              bias_score: 30,
+              bias_score: 25,
               feedback: [
                 "Elite education markers: 'Harvard University' and 'Stanford Graduate School of Business'",
                 "Prestigious employment history: 'Goldman Sachs', 'McKinsey & Company', 'Apple'",

@@ -1,595 +1,784 @@
 
 import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Brain, Database, Code, Users, Webhook, LineChart, Network, Lock, Zap, RefreshCw, Filter, AlertCircle } from 'lucide-react';
-
-const steps = [
-  {
-    title: "Biased Training Data",
-    description: "AI algorithms learn from historical data that often contains implicit human biases. When an algorithm is trained on resumes from a company that historically hired more men than women for technical roles, it learns to favor male candidates—even without explicitly considering gender.",
-    visualization: (
-      <div className="my-6">
-        <div className="relative bg-muted/30 p-5 rounded-xl overflow-hidden border">
-          <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
-          <div className="relative">
-            <div className="flex justify-between mb-3 items-center">
-              <h4 className="font-medium text-sm">Historical Hiring Data</h4>
-              <Database className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="grid grid-cols-8 gap-2 mb-6">
-              {Array.from({ length: 40 }).map((_, i) => (
-                <div key={i} className={cn(
-                  "aspect-square rounded-md flex items-center justify-center text-xs font-medium",
-                  i < 32 ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"
-                )}>
-                  {i < 32 ? "M" : "F"}
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="h-3 w-3 rounded-sm bg-blue-100"></div>
-              <span>Male candidates (80%)</span>
-              <div className="h-3 w-3 rounded-sm bg-pink-100 ml-3"></div>
-              <span>Female candidates (20%)</span>
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-          <div className="p-4 border rounded-md bg-destructive/5">
-            <h5 className="font-medium mb-2 text-sm flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-destructive" />
-              <span>Bias Entry Point</span>
-            </h5>
-            <p className="text-xs text-muted-foreground">When this data is used to train AI, it will perceive the 80/20 split as the "correct" pattern and apply it to future candidates.</p>
-          </div>
-          <div className="p-4 border rounded-md">
-            <h5 className="font-medium mb-2 text-sm flex items-center gap-2">
-              <Brain className="h-4 w-4 text-primary" />
-              <span>Algorithm Effect</span>
-            </h5>
-            <p className="text-xs text-muted-foreground">The AI starts to associate certain resume elements with "successful" candidates and reinforces existing patterns.</p>
-          </div>
-        </div>
-      </div>
-    ),
-    insights: [
-      "Training data reflects past human decisions and cultural biases",
-      "AI systems often learn from datasets that are not demographically balanced",
-      "The past becomes the predictor for the future, perpetuating existing inequities"
-    ]
-  },
-  {
-    title: "Pattern Recognition Bias",
-    description: "AI systems excel at identifying patterns in data—but they can't distinguish between valid job-relevant patterns and discriminatory correlations. These systems identify qualities and keywords that appear frequently in the training data and use them to score new candidates, unknowingly perpetuating historical bias.",
-    visualization: (
-      <div className="my-6">
-        <div className="bg-gradient-to-r from-primary/5 to-background p-5 rounded-xl border">
-          <div className="flex justify-between mb-3 items-center">
-            <h4 className="font-medium text-sm">AI Pattern Recognition</h4>
-            <Network className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded-md shadow-sm">
-              <h5 className="text-sm font-medium mb-3 flex items-center">
-                <Webhook className="mr-2 h-4 w-4 text-blue-500" />
-                Masculine-Associated Patterns
-              </h5>
-              <ul className="space-y-2">
-                <li className="text-xs flex items-start gap-2">
-                  <div className="min-w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] mt-0.5">+</div>
-                  <span>Action verbs: "executed," "drove," "captured," "dominated"</span>
-                </li>
-                <li className="text-xs flex items-start gap-2">
-                  <div className="min-w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] mt-0.5">+</div>
-                  <span>Competitive sports or achievements</span>
-                </li>
-                <li className="text-xs flex items-start gap-2">
-                  <div className="min-w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] mt-0.5">+</div>
-                  <span>Leadership framed as "directing" or "leading"</span>
-                </li>
-                <li className="text-xs flex items-start gap-2">
-                  <div className="min-w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] mt-0.5">+</div>
-                  <span>Technical skills prominently featured</span>
-                </li>
-              </ul>
-            </div>
-            <div className="bg-white p-4 rounded-md shadow-sm">
-              <h5 className="text-sm font-medium mb-3 flex items-center">
-                <Webhook className="mr-2 h-4 w-4 text-pink-500" />
-                Feminine-Associated Patterns
-              </h5>
-              <ul className="space-y-2">
-                <li className="text-xs flex items-start gap-2">
-                  <div className="min-w-4 h-4 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-[10px] mt-0.5">-</div>
-                  <span>Collaborative verbs: "assisted," "contributed," "supported"</span>
-                </li>
-                <li className="text-xs flex items-start gap-2">
-                  <div className="min-w-4 h-4 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-[10px] mt-0.5">-</div>
-                  <span>Social or community activities</span>
-                </li>
-                <li className="text-xs flex items-start gap-2">
-                  <div className="min-w-4 h-4 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-[10px] mt-0.5">-</div>
-                  <span>Leadership framed as "coordinating" or "facilitating"</span>
-                </li>
-                <li className="text-xs flex items-start gap-2">
-                  <div className="min-w-4 h-4 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 text-[10px] mt-0.5">-</div>
-                  <span>Soft skills emphasized over technical skills</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="text-xs text-muted-foreground mt-4 bg-muted/30 p-3 rounded-md">
-            <div className="flex items-center mb-1">
-              <Code className="h-3 w-3 mr-1" />
-              <span className="font-mono text-[10px]">AI scoring_weight = frequency_in_successful_candidates / total_occurrences</span>
-            </div>
-            <p>The algorithm assigns higher weights to patterns more common in historically successful candidates, treating correlation as causation.</p>
-          </div>
-        </div>
-      </div>
-    ),
-    insights: [
-      "AI systems can't distinguish between correlation and causation",
-      "What we perceive as 'neutral' features often have hidden demographic correlations",
-      "Language choice and self-presentation styles vary across demographic groups"
-    ]
-  },
-  {
-    title: "Proxy Variable Detection",
-    description: "Even when algorithms explicitly exclude protected characteristics like gender, race, or age, they can discover 'proxy variables' that correlate with these attributes. For example, an algorithm might identify that graduates of women's colleges are less likely to be 'successful' based on historical data, effectively discriminating by gender without explicitly considering it.",
-    visualization: (
-      <div className="my-6">
-        <div className="bg-gradient-to-r from-muted/20 to-background p-5 rounded-xl border">
-          <div className="flex justify-between mb-4 items-center">
-            <h4 className="font-medium text-sm">AI Finding Proxy Variables</h4>
-            <Filter className="h-4 w-4 text-muted-foreground" />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-destructive/5 p-3 rounded-md border border-destructive/20">
-              <h5 className="text-xs font-medium mb-2">Explicitly Removed Variables</h5>
-              <ul className="space-y-1.5">
-                <li className="text-xs flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-100 flex items-center justify-center">
-                    <span className="text-[8px] text-red-600">✕</span>
-                  </div>
-                  <span className="line-through text-muted-foreground">Gender (Male/Female)</span>
-                </li>
-                <li className="text-xs flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-100 flex items-center justify-center">
-                    <span className="text-[8px] text-red-600">✕</span>
-                  </div>
-                  <span className="line-through text-muted-foreground">Age (Birth Date)</span>
-                </li>
-                <li className="text-xs flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-100 flex items-center justify-center">
-                    <span className="text-[8px] text-red-600">✕</span>
-                  </div>
-                  <span className="line-through text-muted-foreground">Race/Ethnicity</span>
-                </li>
-                <li className="text-xs flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-100 flex items-center justify-center">
-                    <span className="text-[8px] text-red-600">✕</span>
-                  </div>
-                  <span className="line-through text-muted-foreground">Disability Status</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="bg-amber-50 p-3 rounded-md border border-amber-200">
-              <h5 className="text-xs font-medium mb-2">Discovered Proxy Variables</h5>
-              <ul className="space-y-1.5">
-                <li className="text-xs flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-amber-100 flex items-center justify-center">
-                    <span className="text-[10px] text-amber-600">!</span>
-                  </div>
-                  <span>Women's college names (Mills College)</span>
-                </li>
-                <li className="text-xs flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-amber-100 flex items-center justify-center">
-                    <span className="text-[10px] text-amber-600">!</span>
-                  </div>
-                  <span>Graduation year (indicates age)</span>
-                </li>
-                <li className="text-xs flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-amber-100 flex items-center justify-center">
-                    <span className="text-[10px] text-amber-600">!</span>
-                  </div>
-                  <span>Address/ZIP code (demographic correlations)</span>
-                </li>
-                <li className="text-xs flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-amber-100 flex items-center justify-center">
-                    <span className="text-[10px] text-amber-600">!</span>
-                  </div>
-                  <span>Employment gaps (may indicate caregiving)</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="mt-4 p-3 bg-muted/20 rounded-md">
-            <h5 className="text-xs font-medium mb-2 flex items-center">
-              <Zap className="h-3 w-3 mr-1.5 text-primary" />
-              <span>The Algorithmic Connection</span>
-            </h5>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <div className="p-2 bg-white rounded border text-[10px]">
-                <strong>Example:</strong> Address in ZIP code 94110 correlates with 35% Hispanic population
-              </div>
-              <div className="p-2 bg-white rounded border text-[10px]">
-                <strong>Example:</strong> Mills College graduate correlates with 100% female identity
-              </div>
-              <div className="p-2 bg-white rounded border text-[10px]">
-                <strong>Example:</strong> 2-year gap in work history correlates with 78% likelihood of parenthood
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-4 border rounded-md">
-            <h5 className="font-medium text-sm mb-2 flex items-center gap-2">
-              <Lock className="h-4 w-4 text-primary" />
-              <span>Real-World Example</span>
-            </h5>
-            <p className="text-xs">Amazon's experimental AI recruiting tool downgraded resumes containing the word "women's" and resumes from all-women's colleges, despite gender not being an explicit variable in the system.</p>
-          </div>
-          <div className="p-4 border rounded-md bg-destructive/5">
-            <h5 className="font-medium text-sm mb-2 flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-destructive" />
-              <span>Why This Matters</span>
-            </h5>
-            <p className="text-xs">The AI identifies patterns that indirectly reveal protected characteristics, creating a technical loophole around anti-discrimination laws and policies.</p>
-          </div>
-        </div>
-      </div>
-    ),
-    insights: [
-      "AI can infer protected characteristics from seemingly neutral information",
-      "Simply removing protected variables does not prevent discrimination",
-      "Proxy discrimination is often more difficult to detect and challenge legally",
-      "Algorithmic systems can circumvent human oversight mechanisms"
-    ]
-  },
-  {
-    title: "Feedback Loop Amplification",
-    description: "AI systems create powerful feedback loops that amplify biases over time. When an AI selects candidates based on biased patterns, those candidates get hired and become new data points that reinforforce the original bias—creating an escalating cycle of discrimination that becomes increasingly difficult to detect or correct.",
-    visualization: (
-      <div className="my-6">
-        <div className="bg-gradient-to-br from-primary/5 via-background to-muted/20 p-5 rounded-xl border">
-          <div className="flex justify-between mb-4 items-center">
-            <h4 className="font-medium text-sm">The Bias Amplification Cycle</h4>
-            <RefreshCw className="h-4 w-4 text-muted-foreground" />
-          </div>
-          
-          <div className="relative">
-            <div className="max-w-md mx-auto">
-              <div className="flex flex-col items-center">
-                <div className="w-64 p-3 bg-white border rounded-lg shadow-sm mb-2 relative z-10">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-primary/10 rounded-full p-2 flex-shrink-0">
-                      <Database className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <h6 className="text-xs font-medium">1. Historically Biased Training Data</h6>
-                      <p className="text-[10px] text-muted-foreground mt-1">80% male representation in past "successful" hires</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="h-6 w-0.5 bg-gradient-to-b from-primary/40 to-primary/20"></div>
-                
-                <div className="w-64 p-3 bg-white border rounded-lg shadow-sm mb-2 relative z-10">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-primary/10 rounded-full p-2 flex-shrink-0">
-                      <Brain className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <h6 className="text-xs font-medium">2. AI Makes Biased Predictions</h6>
-                      <p className="text-[10px] text-muted-foreground mt-1">Algorithm favors candidates with patterns found in previous male hires</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="h-6 w-0.5 bg-gradient-to-b from-primary/40 to-primary/20"></div>
-                
-                <div className="w-64 p-3 bg-white border rounded-lg shadow-sm mb-2 relative z-10">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-primary/10 rounded-full p-2 flex-shrink-0">
-                      <Users className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <h6 className="text-xs font-medium">3. Biased Candidates Get Hired</h6>
-                      <p className="text-[10px] text-muted-foreground mt-1">New hires continue to reflect the unbalanced 80/20 gender ratio</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="h-6 w-0.5 bg-gradient-to-b from-primary/40 to-primary/20"></div>
-                
-                <div className="w-64 p-3 bg-white border rounded-lg shadow-sm relative z-10">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-primary/10 rounded-full p-2 flex-shrink-0">
-                      <LineChart className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <h6 className="text-xs font-medium">4. Bias Reinforcement</h6>
-                      <p className="text-[10px] text-muted-foreground mt-1">New hires' data is added to the training dataset, further reinforcing the pattern</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="h-10 w-0.5 bg-gradient-to-b from-primary/40 to-primary/5"></div>
-                
-                <div className="w-72 p-3 bg-primary/10 border border-primary/20 rounded-lg shadow-sm relative z-10">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-white rounded-full p-2 flex-shrink-0">
-                      <AlertCircle className="h-4 w-4 text-destructive" />
-                    </div>
-                    <div>
-                      <h6 className="text-xs font-medium">Result: Exponential Bias Amplification</h6>
-                      <p className="text-[10px] text-muted-foreground mt-1">Each iteration of the cycle makes the system increasingly biased over time, potentially reaching an 85/15 or 90/10 ratio</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Curved line connecting the first and last box */}
-              <div className="absolute right-0 top-0 bottom-0 w-16 border-r-2 border-dashed border-primary/20 rounded-r-full h-full"></div>
-              <div className="absolute left-full top-1/2 transform -translate-y-1/2 -translate-x-4">
-                <ChevronRight className="h-8 w-8 text-primary/30" />
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-4 p-4 border rounded-md bg-muted/10">
-          <h5 className="font-medium text-sm mb-3">Real-World Consequences of Feedback Loops</h5>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-3 bg-white rounded-md shadow-sm">
-              <h6 className="text-xs font-medium mb-2">Increasing Inequality</h6>
-              <p className="text-[10px] text-muted-foreground">Initial small biases become significantly larger over multiple iterations, creating substantial representation gaps.</p>
-            </div>
-            <div className="p-3 bg-white rounded-md shadow-sm">
-              <h6 className="text-xs font-medium mb-2">Data Ossification</h6>
-              <p className="text-[10px] text-muted-foreground">The AI becomes increasingly confident in its biased patterns, making the system more resistant to change over time.</p>
-            </div>
-            <div className="p-3 bg-white rounded-md shadow-sm">
-              <h6 className="text-xs font-medium mb-2">Harder Detection</h6>
-              <p className="text-[10px] text-muted-foreground">As bias becomes encoded in layers of algorithmic decisions, it becomes increasingly difficult to identify and correct.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-    insights: [
-      "Small initial biases can grow exponentially through feedback loops",
-      "AI systems tend to increase confidence in their decisions over time",
-      "Without intervention, algorithmic bias becomes self-reinforcing",
-      "The feedback loop creates 'runaway bias' that quickly exceeds the original bias level"
-    ]
-  },
-  {
-    title: "Complex Interaction Effects",
-    description: "Bias doesn't exist in isolation—it often compounds through intersectional effects. For example, a hiring algorithm might show minimal bias when analyzing gender alone or socioeconomic factors alone, but create dramatic discrimination against women from low-income backgrounds when these factors interact. These complex interactions make bias harder to detect and mitigate.",
-    visualization: (
-      <div className="my-6">
-        <div className="bg-gradient-to-r from-background to-muted/10 p-5 rounded-xl border overflow-hidden">
-          <div className="flex justify-between mb-4 items-center">
-            <h4 className="font-medium text-sm">Intersectional Bias Amplification</h4>
-            <Network className="h-4 w-4 text-muted-foreground" />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h5 className="text-xs font-medium mb-3">Single-Dimension Analysis</h5>
-              <div className="space-y-4">
-                <div className="p-3 bg-white rounded-md border">
-                  <h6 className="text-xs flex items-center gap-1.5 mb-2">
-                    <div className="h-4 w-4 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-[10px] text-blue-600">G</span>
-                    </div>
-                    <span>Gender Bias <span className="text-[10px] text-muted-foreground">(When analyzed alone)</span></span>
-                  </h6>
-                  <div className="w-full bg-muted/30 h-5 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500" style={{ width: '15%' }}></div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">15% reduction in selection rate for women</p>
-                </div>
-                
-                <div className="p-3 bg-white rounded-md border">
-                  <h6 className="text-xs flex items-center gap-1.5 mb-2">
-                    <div className="h-4 w-4 rounded-full bg-green-100 flex items-center justify-center">
-                      <span className="text-[10px] text-green-600">S</span>
-                    </div>
-                    <span>Socioeconomic Bias <span className="text-[10px] text-muted-foreground">(When analyzed alone)</span></span>
-                  </h6>
-                  <div className="w-full bg-muted/30 h-5 rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500" style={{ width: '20%' }}></div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">20% reduction for candidates from lower-income backgrounds</p>
-                </div>
-                
-                <div className="p-3 bg-white rounded-md border">
-                  <h6 className="text-xs flex items-center gap-1.5 mb-2">
-                    <div className="h-4 w-4 rounded-full bg-purple-100 flex items-center justify-center">
-                      <span className="text-[10px] text-purple-600">E</span>
-                    </div>
-                    <span>Educational Institution Bias <span className="text-[10px] text-muted-foreground">(When analyzed alone)</span></span>
-                  </h6>
-                  <div className="w-full bg-muted/30 h-5 rounded-full overflow-hidden">
-                    <div className="h-full bg-purple-500" style={{ width: '25%' }}></div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">25% reduction for non-elite university graduates</p>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h5 className="text-xs font-medium mb-3">Intersectional Analysis</h5>
-              <div className="space-y-4">
-                <div className="p-3 bg-white rounded-md border">
-                  <h6 className="text-xs flex items-center gap-1.5 mb-2">
-                    <div className="h-4 w-4 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-[10px] text-blue-600">G</span>
-                    </div>
-                    <div className="h-4 w-4 rounded-full bg-green-100 flex items-center justify-center -ml-1">
-                      <span className="text-[10px] text-green-600">S</span>
-                    </div>
-                    <span>Gender + Socioeconomic</span>
-                  </h6>
-                  <div className="w-full bg-muted/30 h-5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-blue-500 to-green-500" style={{ width: '45%' }}></div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">45% reduction for women from lower-income backgrounds</p>
-                </div>
-                
-                <div className="p-3 bg-white rounded-md border">
-                  <h6 className="text-xs flex items-center gap-1.5 mb-2">
-                    <div className="h-4 w-4 rounded-full bg-green-100 flex items-center justify-center">
-                      <span className="text-[10px] text-green-600">S</span>
-                    </div>
-                    <div className="h-4 w-4 rounded-full bg-purple-100 flex items-center justify-center -ml-1">
-                      <span className="text-[10px] text-purple-600">E</span>
-                    </div>
-                    <span>Socioeconomic + Educational</span>
-                  </h6>
-                  <div className="w-full bg-muted/30 h-5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-green-500 to-purple-500" style={{ width: '55%' }}></div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">55% reduction for lower-income candidates from non-elite universities</p>
-                </div>
-                
-                <div className="p-3 bg-gradient-to-r from-red-50 to-red-100 rounded-md border border-red-200">
-                  <h6 className="text-xs flex items-center gap-1.5 mb-2">
-                    <div className="h-4 w-4 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-[10px] text-blue-600">G</span>
-                    </div>
-                    <div className="h-4 w-4 rounded-full bg-green-100 flex items-center justify-center -ml-1">
-                      <span className="text-[10px] text-green-600">S</span>
-                    </div>
-                    <div className="h-4 w-4 rounded-full bg-purple-100 flex items-center justify-center -ml-1">
-                      <span className="text-[10px] text-purple-600">E</span>
-                    </div>
-                    <span>All Three Factors</span>
-                  </h6>
-                  <div className="w-full bg-muted/30 h-5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-blue-500 via-green-500 to-purple-500" style={{ width: '75%' }}></div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">75% reduction for women from lower-income backgrounds attending non-elite universities</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-5 p-3 bg-muted/10 rounded-md border">
-            <h5 className="text-xs font-medium mb-2 flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-500" />
-              <span>The Multiplier Effect</span>
-            </h5>
-            <p className="text-[10px]">
-              When multiple bias factors combine, they don't just add—they multiply. This creates dramatically worse outcomes for people with intersecting marginalized identities, far beyond what single-factor analysis would predict.
-            </p>
-          </div>
-        </div>
-      </div>
-    ),
-    insights: [
-      "Biases combine multiplicatively rather than additively",
-      "Testing algorithms for single-dimension bias can miss intersectional effects",
-      "The most marginalized groups face compounded discrimination",
-      "Small biases in multiple dimensions can result in severe discrimination when combined"
-    ]
-  }
-];
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { CircleHelp, Code, Database, Eye, EyeOff, Filter, FlaskConical, Search, Shuffle, AlertCircle, ArrowRight, ChevronRight, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 const BiasExplanation: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  
-  const handleNext = () => {
-    setCurrentStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
+  const [openPanel, setOpenPanel] = useState<string | null>(null);
+  const [activeBiasType, setActiveBiasType] = useState("historical");
+  const [visibleExample, setVisibleExample] = useState<number | null>(null);
+  const [activeStage, setActiveStage] = useState(1);
+  const [showBias, setShowBias] = useState(false);
+  const [useMobileDrawer, setUseMobileDrawer] = useState(window.innerWidth < 768);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setUseMobileDrawer(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const biasTypes = [
+    {
+      id: "historical",
+      title: "Historical Bias",
+      description: "When AI is trained on past hiring data that reflects historical discrimination, it learns and perpetuates these patterns.",
+      example: "If tech companies historically hired more men than women, an AI model trained on this data will favor male candidates even if gender is not an explicit factor.",
+      icon: <Database className="h-5 w-5" />,
+      color: "from-orange-500/20 to-red-500/20",
+      visual: (
+        <div className="relative h-48 rounded-lg overflow-hidden border">
+          <div className="absolute inset-0 grid grid-cols-10 grid-rows-10 gap-0.5 p-2">
+            {Array.from({ length: 100 }).map((_, i) => {
+              const isMale = i < 70;
+              const isHighlighted = showBias && isMale;
+              return (
+                <div 
+                  key={i}
+                  className={cn(
+                    "rounded transition-colors duration-500",
+                    isMale ? "bg-blue-400/20" : "bg-pink-400/20",
+                    isHighlighted && "bg-blue-500/70"
+                  )}
+                />
+              );
+            })}
+          </div>
+          <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/70 to-transparent text-white text-xs">
+            <div className="flex justify-between font-mono">
+              <div>Historical data: 70% male hires</div>
+              <div>30% female hires</div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "representation",
+      title: "Representation Bias",
+      description: "Occurs when the data used to train AI doesn't adequately represent all demographic groups in the population.",
+      example: "If training data overrepresents certain ethnic groups or underrepresents others, the algorithm may perform better for majority groups and worse for minorities.",
+      icon: <Search className="h-5 w-5" />,
+      color: "from-blue-500/20 to-purple-500/20",
+      visual: (
+        <div className="relative h-48 rounded-lg overflow-hidden border">
+          <div className="absolute inset-0 grid grid-cols-10 grid-rows-10 gap-0.5 p-2">
+            {Array.from({ length: 100 }).map((_, i) => {
+              const isGroupA = i < 85;
+              const isLearned = showBias && (isGroupA ? Math.random() > 0.2 : Math.random() > 0.8);
+              return (
+                <div 
+                  key={i}
+                  className={cn(
+                    "rounded transition-colors duration-300",
+                    isGroupA ? "bg-blue-400/20" : "bg-green-400/20",
+                    isLearned && (isGroupA ? "bg-blue-500/70" : "bg-green-500/70")
+                  )}
+                />
+              );
+            })}
+          </div>
+          <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/70 to-transparent text-white text-xs">
+            <div className="flex justify-between font-mono">
+              <div>85% Group A data samples</div>
+              <div>15% Group B</div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "measurement",
+      title: "Measurement Bias",
+      description: "Occurs when the features selected to represent a concept are better proxies for some groups than others.",
+      example: "Using years of continuous employment as a proxy for reliability may disadvantage women who take parental leave or people with health conditions requiring medical leave.",
+      icon: <FlaskConical className="h-5 w-5" />,
+      color: "from-green-500/20 to-teal-500/20",
+      visual: (
+        <div className="relative h-48 rounded-lg overflow-hidden border">
+          <div className="absolute inset-0 flex flex-col p-4">
+            <div className="text-xs text-center mb-2 font-mono">Measurement: Years of Continuous Employment</div>
+            <div className="flex-1 flex items-end pb-8">
+              <div className="w-1/4 bg-blue-400/20 h-full relative group">
+                {showBias && (
+                  <motion.div 
+                    className="absolute inset-x-0 bottom-0 bg-blue-500/70"
+                    initial={{ height: 0 }}
+                    animate={{ height: '90%' }}
+                    transition={{ duration: 1 }}
+                  />
+                )}
+                <div className="absolute inset-x-0 bottom-0 text-xs text-center">Group A</div>
+              </div>
+              <div className="w-1/4 bg-pink-400/20 h-full relative">
+                {showBias && (
+                  <motion.div 
+                    className="absolute inset-x-0 bottom-0 bg-pink-500/70"
+                    initial={{ height: 0 }}
+                    animate={{ height: '40%' }}
+                    transition={{ duration: 1 }}
+                  />
+                )}
+                <div className="absolute inset-x-0 bottom-0 text-xs text-center">Group B</div>
+              </div>
+              <div className="w-1/4 bg-yellow-400/20 h-full relative">
+                {showBias && (
+                  <motion.div 
+                    className="absolute inset-x-0 bottom-0 bg-yellow-500/70"
+                    initial={{ height: 0 }}
+                    animate={{ height: '60%' }}
+                    transition={{ duration: 1 }}
+                  />
+                )}
+                <div className="absolute inset-x-0 bottom-0 text-xs text-center">Group C</div>
+              </div>
+              <div className="w-1/4 bg-green-400/20 h-full relative">
+                {showBias && (
+                  <motion.div 
+                    className="absolute inset-x-0 bottom-0 bg-green-500/70"
+                    initial={{ height: 0 }}
+                    animate={{ height: '45%' }}
+                    transition={{ duration: 1 }}
+                  />
+                )}
+                <div className="absolute inset-x-0 bottom-0 text-xs text-center">Group D</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "aggregation",
+      title: "Aggregation Bias",
+      description: "Occurs when models are applied across different populations without accounting for how relationships between variables might differ between groups.",
+      example: "An algorithm that works well for evaluating candidates from large urban universities might perform poorly when assessing candidates from rural community colleges with different educational structures.",
+      icon: <Shuffle className="h-5 w-5" />,
+      color: "from-purple-500/20 to-pink-500/20",
+      visual: (
+        <div className="relative h-48 rounded-lg overflow-hidden border">
+          <div className="absolute inset-0 flex justify-center items-center p-4">
+            <div className="w-full max-w-xs">
+              <div className="text-xs text-center mb-4 font-mono">Same Model Applied to Different Groups</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="text-center text-xs">Group 1</div>
+                  {showBias ? (
+                    <div className="h-20 bg-gradient-to-r from-green-500/70 to-green-500/20 rounded flex items-center justify-center text-xs">
+                      95% Accuracy
+                    </div>
+                  ) : (
+                    <div className="h-20 bg-gray-200/50 rounded"></div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <div className="text-center text-xs">Group 2</div>
+                  {showBias ? (
+                    <div className="h-20 bg-gradient-to-r from-red-500/70 to-red-500/20 rounded flex items-center justify-center text-xs">
+                      62% Accuracy
+                    </div>
+                  ) : (
+                    <div className="h-20 bg-gray-200/50 rounded"></div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "proxy",
+      title: "Proxy Variable Bias",
+      description: "Even when protected attributes like race or gender are removed, algorithms can find proxy variables that correlate with them.",
+      example: "A zip code can be a proxy for race due to historical housing segregation. School names can be proxies for socioeconomic status or gender (e.g., women's colleges).",
+      icon: <Filter className="h-5 w-5" />,
+      color: "from-yellow-500/20 to-orange-500/20",
+      visual: (
+        <div className="relative h-48 rounded-lg overflow-hidden border">
+          <div className="absolute inset-0 flex flex-col p-4">
+            <div className="text-xs text-center mb-2 font-mono">Direct vs. Proxy Variables</div>
+            <div className="flex-1 flex items-center justify-center">
+              {!showBias ? (
+                <div className="p-4 border border-dashed rounded-md text-center space-y-2">
+                  <div className="text-xs">Variables Used in Model</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="px-2 py-1 bg-gray-100 rounded text-xs">Zip Code</div>
+                    <div className="px-2 py-1 bg-gray-100 rounded text-xs">School Name</div>
+                    <div className="px-2 py-1 bg-gray-100 rounded text-xs">Experience</div>
+                    <div className="px-2 py-1 bg-gray-100 rounded text-xs">Hobbies</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 border border-dashed rounded-md text-center space-y-4 w-full">
+                  <div className="text-xs">Correlation with Protected Attributes</div>
+                  <div className="space-y-2 w-full">
+                    <div className="flex items-center text-xs">
+                      <span className="w-24 text-left">Zip Code</span>
+                      <div className="h-2 flex-1 bg-gray-200 rounded-full">
+                        <div className="h-full bg-red-500 rounded-full" style={{ width: '85%' }}></div>
+                      </div>
+                      <span className="w-16 text-right">85% Race</span>
+                    </div>
+                    <div className="flex items-center text-xs">
+                      <span className="w-24 text-left">School Name</span>
+                      <div className="h-2 flex-1 bg-gray-200 rounded-full">
+                        <div className="h-full bg-orange-500 rounded-full" style={{ width: '70%' }}></div>
+                      </div>
+                      <span className="w-16 text-right">70% Gender</span>
+                    </div>
+                    <div className="flex items-center text-xs">
+                      <span className="w-24 text-left">Hobbies</span>
+                      <div className="h-2 flex-1 bg-gray-200 rounded-full">
+                        <div className="h-full bg-yellow-500 rounded-full" style={{ width: '65%' }}></div>
+                      </div>
+                      <span className="w-16 text-right">65% Class</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "algorithm",
+      title: "Algorithm Design Bias",
+      description: "The choices made in constructing an algorithm, such as optimization objectives or model architecture, can introduce bias.",
+      example: "If an algorithm is designed to optimize for technical skills alone while ignoring collaborative abilities, it might systematically disadvantage candidates whose strengths are in team-building.",
+      icon: <Code className="h-5 w-5" />,
+      color: "from-cyan-500/20 to-blue-500/20",
+      visual: (
+        <div className="relative h-48 rounded-lg overflow-hidden border">
+          <div className="absolute inset-0 flex flex-col p-4">
+            <div className="text-xs text-center mb-2 font-mono">Algorithm Design: Feature Weights</div>
+            <div className="flex-1 flex items-center justify-center">
+              {!showBias ? (
+                <div className="w-full max-w-xs space-y-2">
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-32">Technical Skills</div>
+                    <div className="h-3 flex-1 bg-gray-200 rounded"></div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-32">Communication</div>
+                    <div className="h-3 flex-1 bg-gray-200 rounded"></div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-32">Leadership</div>
+                    <div className="h-3 flex-1 bg-gray-200 rounded"></div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-32">Teamwork</div>
+                    <div className="h-3 flex-1 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full max-w-xs space-y-2">
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-32">Technical Skills</div>
+                    <div className="h-3 flex-1 bg-blue-500 rounded"></div>
+                    <div className="w-8 text-right">70%</div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-32">Communication</div>
+                    <div className="h-3 w-1/4 bg-blue-300 rounded"></div>
+                    <div className="w-8 text-right">15%</div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-32">Leadership</div>
+                    <div className="h-3 w-1/6 bg-blue-200 rounded"></div>
+                    <div className="w-8 text-right">10%</div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <div className="w-32">Teamwork</div>
+                    <div className="h-3 w-1/12 bg-blue-100 rounded"></div>
+                    <div className="w-8 text-right">5%</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  const stages = [
+    {
+      id: 1,
+      title: "Data Collection",
+      description: "The initial process of gathering historical hiring data that will be used to train the AI system.",
+      biases: ["Historical bias can enter here if past hiring practices were discriminatory.", 
+               "Representation bias occurs if certain groups are underrepresented in the training data."],
+      example: "A company's historical hiring records may contain mostly successful male candidates for technical roles if the company had gender-biased hiring in the past."
+    },
+    {
+      id: 2,
+      title: "Feature Selection",
+      description: "Determining which attributes from candidate profiles will be used by the algorithm.",
+      biases: ["Proxy variable bias can emerge if selected features correlate with protected characteristics.",
+               "Measurement bias can occur if chosen metrics advantage certain groups."],
+      example: "Selecting 'years of continuous employment' as a feature disadvantages those who take career breaks for caregiving, disproportionately affecting women."
+    },
+    {
+      id: 3,
+      title: "Model Training",
+      description: "The process of training the AI algorithm on the selected data and features.",
+      biases: ["Aggregation bias emerges when models don't account for differences between population groups.",
+               "Algorithm design bias occurs through choices in optimization objectives and model structure."],
+      example: "An algorithm might be trained to prioritize candidates similar to currently 'successful' employees, perpetuating existing demographic imbalances."
+    },
+    {
+      id: 4,
+      title: "Decision Making",
+      description: "How the model ultimately evaluates candidates and makes or influences hiring decisions.",
+      biases: ["Interpretation bias can occur when model outputs are misinterpreted or given inappropriate weight.",
+               "Feedback loop bias happens when biased decisions create new training data, amplifying the problem."],
+      example: "A biased model might consistently rank qualified candidates from certain backgrounds lower, leading to fewer hires from these groups and reinforcing the pattern in future training data."
+    }
+  ];
+
+  const DetailPanel = ({ biasType }: { biasType: typeof biasTypes[0] }) => {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-4"
+      >
+        <div className="flex items-start gap-3">
+          <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${biasType.color} flex items-center justify-center flex-shrink-0`}>
+            {biasType.icon}
+          </div>
+          <div>
+            <h3 className="text-lg font-medium">{biasType.title}</h3>
+            <p className="text-sm text-muted-foreground mt-1">{biasType.description}</p>
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t">
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <h4 className="text-sm font-medium">Visual Example</h4>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center gap-1 h-7 text-xs" 
+                onClick={() => setShowBias(!showBias)}
+              >
+                {showBias ? (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5" />
+                    <span>Hide Bias</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>Show Bias</span>
+                  </>
+                )}
+              </Button>
+            </div>
+            {biasType.visual}
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t">
+          <h4 className="text-sm font-medium mb-2">Real-World Example</h4>
+          <div className="bg-muted/30 p-3 rounded-md text-sm">
+            <p>{biasType.example}</p>
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t">
+          <h4 className="text-sm font-medium mb-2">Where It Appears in the Process</h4>
+          <div className="grid grid-cols-4 gap-1">
+            {stages.map(stage => (
+              <div 
+                key={stage.id} 
+                className={cn(
+                  "p-2 rounded-md text-center text-xs font-medium",
+                  stage.biases.some(bias => bias.toLowerCase().includes(biasType.id)) 
+                    ? "bg-primary/10 text-primary" 
+                    : "bg-muted/30 text-muted-foreground"
+                )}
+              >
+                Stage {stage.id}
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    );
   };
-  
-  const handlePrevious = () => {
-    setCurrentStep((prev) => (prev > 0 ? prev - 1 : prev));
+
+  const AIHiringPipeline = () => {
+    return (
+      <div className="mt-8 space-y-6">
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">The AI Hiring Pipeline</h3>
+          <p className="text-sm text-muted-foreground">
+            Bias can enter at multiple stages of the AI-powered hiring process. Click each stage to learn more.
+          </p>
+        </div>
+        
+        <div className="relative">
+          <div className="absolute h-0.5 bg-muted top-6 left-8 right-8 z-0"></div>
+          <div className="relative z-10 flex justify-between">
+            {stages.map((stage) => (
+              <div key={stage.id} className="flex flex-col items-center w-1/4">
+                <button
+                  onClick={() => setActiveStage(stage.id === activeStage ? 0 : stage.id)}
+                  className={cn(
+                    "h-12 w-12 rounded-full flex items-center justify-center text-sm font-medium transition-colors border-2",
+                    activeStage === stage.id 
+                      ? "bg-primary text-primary-foreground border-primary" 
+                      : "bg-muted border-muted-foreground/20"
+                  )}
+                >
+                  {stage.id}
+                </button>
+                <div className="mt-2 text-xs font-medium text-center">{stage.title}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <AnimatePresence mode="wait">
+          {activeStage > 0 && (
+            <motion.div
+              key={activeStage}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="text-base">Stage {activeStage}: {stages[activeStage - 1].title}</CardTitle>
+                  <CardDescription>{stages[activeStage - 1].description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium">Potential Bias Points:</h4>
+                    <ul className="space-y-2">
+                      {stages[activeStage - 1].biases.map((bias, index) => (
+                        <motion.li 
+                          key={index} 
+                          initial={{ opacity: 0, x: -5 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex items-start gap-2"
+                        >
+                          <AlertCircle className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">{bias}</span>
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </div>
+                </CardContent>
+                <CardFooter className="bg-muted/30 text-sm">
+                  <p>{stages[activeStage - 1].example}</p>
+                </CardFooter>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
   };
-  
-  const handleStepClick = (index: number) => {
-    setCurrentStep(index);
-  };
-  
-  return (
-    <div className="w-full max-w-3xl mx-auto shadow-card border rounded-lg overflow-hidden bg-gradient-to-br from-background to-muted/20">
-      <div className="flex flex-wrap bg-muted/30 border-b">
-        {steps.map((step, index) => (
+
+  const renderDetailContent = () => (
+    <div className="pt-2">
+      <div className="mb-6">
+        <h3 className="text-xl font-bold mb-2">Types of Algorithmic Bias</h3>
+        <p className="text-sm text-muted-foreground">
+          Explore the various ways bias enters AI hiring systems by selecting a type below.
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {biasTypes.map((type) => (
           <button
-            key={index}
-            onClick={() => handleStepClick(index)}
+            key={type.id}
+            onClick={() => setActiveBiasType(type.id)}
             className={cn(
-              "flex-1 px-3 py-4 text-center text-sm font-medium transition-all min-w-[100px]",
-              currentStep === index
-                ? "bg-primary/10 text-primary border-b-2 border-primary"
-                : "border-b-2 border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/20"
+              "p-3 rounded-lg transition-all text-left flex items-center gap-2",
+              activeBiasType === type.id
+                ? `bg-gradient-to-br ${type.color} border border-primary/10`
+                : "bg-muted/30 hover:bg-muted/50 border border-transparent"
             )}
           >
-            <span className="hidden md:inline">{step.title}</span>
-            <span className="md:hidden">{index + 1}</span>
+            <div className={cn(
+              "h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0",
+              activeBiasType === type.id ? "bg-background/80" : "bg-background/30"
+            )}>
+              {type.icon}
+            </div>
+            <span className="text-sm font-medium">{type.title}</span>
           </button>
         ))}
       </div>
       
-      <div className="p-6 md:p-8">
-        <div className="flex items-center mb-4">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
-            {currentStep + 1}
-          </div>
-          <h3 className="text-xl md:text-2xl font-bold">{steps[currentStep].title}</h3>
-        </div>
-        
-        <p className="text-muted-foreground">{steps[currentStep].description}</p>
-        
-        {steps[currentStep].visualization}
-        
-        <div className="bg-muted/10 p-4 rounded-lg border mt-4">
-          <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
-            <Brain className="h-4 w-4 text-primary" />
-            <span>Key Insights</span>
-          </h4>
-          <ul className="space-y-2">
-            {steps[currentStep].insights?.map((insight, idx) => (
-              <li key={idx} className="flex items-start gap-2 text-sm">
-                <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
-                  <span className="text-xs">✓</span>
+      <Separator className="my-6" />
+      
+      <div>
+        <AnimatePresence mode="wait">
+          <DetailPanel 
+            key={activeBiasType} 
+            biasType={biasTypes.find(t => t.id === activeBiasType)!} 
+          />
+        </AnimatePresence>
+      </div>
+      
+      <AIHiringPipeline />
+    </div>
+  );
+
+  // Mobile version uses Drawer
+  const renderMobileView = () => (
+    <div className="w-full max-w-3xl mx-auto opacity-0 animate-fade-in-up">
+      <div className="grid grid-cols-1 md:hidden gap-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Understanding Bias in AI</h3>
+            <Drawer>
+              <DrawerTrigger asChild>
+                <Button variant="outline">Explore Bias Types</Button>
+              </DrawerTrigger>
+              <DrawerContent className="max-h-[80vh] overflow-y-auto">
+                <DrawerHeader>
+                  <DrawerTitle>Types of Algorithmic Bias</DrawerTitle>
+                  <DrawerDescription>
+                    Explore the various ways bias enters AI hiring systems
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="px-4 pb-8">
+                  {renderDetailContent()}
                 </div>
-                <span>{insight}</span>
-              </li>
+              </DrawerContent>
+            </Drawer>
+          </div>
+          
+          <div className="space-y-3">
+            <p>
+              Algorithmic bias in hiring occurs when AI systems systematically produce unfair outcomes for different demographic groups.
+            </p>
+            <p>
+              These biases aren't typically introduced intentionally, but emerge from the data, design choices, and how systems are implemented.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-4">
+            {biasTypes.slice(0, 3).map((type, i) => (
+              <Card key={type.id}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`h-8 w-8 rounded-full bg-gradient-to-br ${type.color} flex items-center justify-center`}>
+                      {type.icon}
+                    </div>
+                    <CardTitle className="text-base">{type.title}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription>{type.description}</CardDescription>
+                </CardContent>
+                <CardFooter className="pt-0 flex justify-end">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="sm" className="text-xs flex items-center gap-1">
+                        Learn more <ChevronRight className="h-3 w-3" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{type.title}</DialogTitle>
+                        <DialogDescription>{type.description}</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-medium mb-1">Example:</h4>
+                          <p className="text-sm">{type.example}</p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium mb-1">Visual Representation:</h4>
+                          <div className="relative">
+                            {type.visual}
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="absolute top-2 right-2 h-7 text-xs z-10"
+                              onClick={() => setShowBias(!showBias)}
+                            >
+                              {showBias ? "Hide Bias" : "Show Bias"}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowBias(false)}>
+                          Reset
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </CardFooter>
+              </Card>
             ))}
-          </ul>
-        </div>
-        
-        <div className="flex justify-between mt-8">
-          <Button
+          </div>
+          
+          <Button 
             variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-            className="hover:bg-muted/50"
+            className="w-full"
+            onClick={() => document.querySelector('button[aria-controls="radix-:r12:"]')?.click()}
           >
-            <ChevronRight className="mr-2 h-4 w-4 rotate-180" />
-            Previous
+            View All Bias Types
           </Button>
-          <Button
-            onClick={handleNext}
-            disabled={currentStep === steps.length - 1}
-            className="bg-gradient-to-r from-primary to-primary/80 hover:shadow-md transition-all"
-          >
-            Next
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
+        </div>
+      </div>
+      
+      <div className="hidden md:block">
+        {renderDesktopView()}
+      </div>
+    </div>
+  );
+
+  // Desktop version uses tabs
+  const renderDesktopView = () => (
+    <div className="w-full max-w-3xl mx-auto opacity-0 animate-fade-in-up">
+      <div className="grid grid-cols-1 gap-8">
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-xl font-bold mb-2">How Bias Enters AI Hiring Systems</h3>
+            <p className="text-muted-foreground">
+              Algorithmic bias isn't usually introduced intentionally—it emerges through various mechanisms in the development and application of AI systems.
+            </p>
+          </div>
+          
+          <Tabs defaultValue="types" className="w-full">
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="types">Bias Types</TabsTrigger>
+              <TabsTrigger value="pipeline">AI Hiring Pipeline</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="types" className="pt-6">
+              {renderDetailContent()}
+            </TabsContent>
+            
+            <TabsContent value="pipeline" className="pt-6">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium">The AI Hiring Process</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Modern AI-driven hiring systems involve multiple stages where bias can enter and be amplified.
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {stages.map((stage) => (
+                    <motion.div
+                      key={stage.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: stage.id * 0.1 }}
+                      className="border rounded-lg overflow-hidden bg-gradient-to-br from-background to-muted/30"
+                    >
+                      <div className="p-4 border-b bg-muted/20">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <span className="text-sm font-medium">{stage.id}</span>
+                          </div>
+                          <h3 className="font-medium">{stage.title}</h3>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <p className="text-sm text-muted-foreground mb-4">{stage.description}</p>
+                        <h4 className="text-sm font-medium mb-2">Potential Biases:</h4>
+                        <ul className="space-y-2">
+                          {stage.biases.map((bias, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm">
+                              <AlertCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                              <span>{bias}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="p-3 bg-muted/30 border-t">
+                        <div className="flex items-start gap-2">
+                          <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+                            <span className="text-xs">Ex</span>
+                          </div>
+                          <p className="text-xs">{stage.example}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                
+                <div className="p-4 border rounded-lg mt-8 bg-primary/5">
+                  <h3 className="text-lg font-medium mb-3">The Amplification Effect</h3>
+                  <p className="text-sm mb-3">
+                    In AI hiring systems, bias isn't just present—it gets amplified through feedback loops:
+                  </p>
+                  <ol className="space-y-3">
+                    <li className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+                        <span className="text-xs">1</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Initial Bias:</span> Historical hiring data contains patterns of discrimination
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+                        <span className="text-xs">2</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Learning:</span> AI systems learn to replicate these patterns, favoring certain demographics
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+                        <span className="text-xs">3</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Reinforcement:</span> The system's biased selections become new "successful" data points
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+                        <span className="text-xs">4</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Amplification:</span> With each cycle, the bias becomes more pronounced in the model
+                      </div>
+                    </li>
+                  </ol>
+                  <div className="mt-4 pt-3 border-t text-sm text-muted-foreground">
+                    This feedback loop is why proactive bias detection and mitigation strategies are essential in AI hiring systems.
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
   );
+
+  return useMobileDrawer ? renderMobileView() : renderDesktopView();
 };
 
 export default BiasExplanation;
