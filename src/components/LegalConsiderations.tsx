@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 
-// Define the region-specific regulations
 interface Regulation {
   id: string;
   title: string;
@@ -78,7 +76,7 @@ const regulations: Record<string, Regulation[]> = {
     {
       id: "eu-ai-act",
       title: "EU AI Act",
-      description: "This proposed legislation would classify AI systems used in employment as "high risk" and impose strict requirements for transparency, human oversight, and risk assessment.",
+      description: "This proposed legislation would classify AI systems used in employment as 'high risk' and impose strict requirements for transparency, human oversight, and risk assessment.",
       implementationYear: "Proposed, expected 2024",
       complianceLevel: 50,
       icon: FileText,
