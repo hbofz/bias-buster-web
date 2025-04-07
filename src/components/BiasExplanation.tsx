@@ -642,7 +642,13 @@ const BiasExplanation: React.FC = () => {
           <Button 
             variant="outline"
             className="w-full"
-            onClick={() => document.querySelector('button[aria-controls="radix-:r12:"]')?.click()}
+            onClick={() => {
+              // Fix: Use querySelector to find the element, and directly use the drawer trigger ref
+              const drawerTrigger = document.querySelector('[aria-controls="radix-:r12:"]');
+              if (drawerTrigger && drawerTrigger instanceof HTMLElement) {
+                drawerTrigger.click();
+              }
+            }}
           >
             View All Bias Types
           </Button>
