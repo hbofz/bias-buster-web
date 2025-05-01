@@ -348,125 +348,111 @@ const BiasExplanation: React.FC = () => {
     }
   ];
 
-  const BiasTypesSimplified = () => (
-    <div className="space-y-8">
-      <div className="text-center mb-8">
-        <h3 className="text-xl font-bold mb-2">6 Main Types of Algorithmic Bias</h3>
-        <p className="text-muted-foreground">Select each type to learn more about how it affects AI hiring systems</p>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-        {biasTypes.map((bias) => (
-          <Button
-            key={bias.id}
-            variant="outline"
-            className={cn(
-              "h-auto flex flex-col items-start p-5 gap-3 text-left bg-gradient-to-br border border-muted-foreground/10",
-              bias.color,
-              activeBiasType === bias.id ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-primary/50"
-            )}
-            onClick={() => setActiveBiasType(bias.id)}
-          >
-            <div className="h-8 w-8 rounded-full bg-background/80 flex items-center justify-center">
-              {bias.icon}
-            </div>
-            <div>
-              <h4 className="font-medium text-base mb-1">{bias.title}</h4>
-              <p className="text-xs text-muted-foreground line-clamp-2">{bias.description}</p>
-            </div>
-            {activeBiasType === bias.id && (
-              <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
-            )}
-          </Button>
-        ))}
-      </div>
-      
-      <div className="mt-8">
-        <AnimatePresence mode="wait">
-          {activeBiasType && (
-            <motion.div
-              key={activeBiasType}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="border rounded-lg p-6 bg-card"
-            >
-              <div className="space-y-6">
-                <div className="flex gap-4 items-start">
-                  <div className={cn(
-                    "h-10 w-10 rounded-full bg-gradient-to-br flex items-center justify-center",
-                    biasTypes.find(b => b.id === activeBiasType)?.color
-                  )}>
-                    {biasTypes.find(b => b.id === activeBiasType)?.icon}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold">{biasTypes.find(b => b.id === activeBiasType)?.title}</h3>
-                    <p className="text-muted-foreground mt-1">
-                      {biasTypes.find(b => b.id === activeBiasType)?.description}
-                    </p>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-medium">Visual Example</h4>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowBias(!showBias)}
-                      className="flex items-center gap-1"
-                    >
-                      {showBias ? <EyeOff size={14} /> : <Eye size={14} />}
-                      {showBias ? "Hide Effect" : "Show Effect"}
-                    </Button>
-                  </div>
-                  {biasTypes.find(b => b.id === activeBiasType)?.visual}
-                </div>
-                
-                <div className="bg-muted/30 p-4 rounded-md">
-                  <h4 className="font-medium mb-2">Real-World Example:</h4>
-                  <p className="text-sm">
-                    {biasTypes.find(b => b.id === activeBiasType)?.example}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-
-  const BiasFlowchart = () => (
-    <div className="space-y-8 mt-16">
-      <div className="text-center mb-8">
-        <h3 className="text-xl font-bold mb-2">How Bias Flows Through AI Hiring Systems</h3>
-        <p className="text-muted-foreground">Follow the journey from data to decision to understand where bias enters the process</p>
-      </div>
-      
-      <div className="relative">
-        <div className="absolute h-1 bg-muted top-12 left-8 right-8 z-0"></div>
+  const DetailPanel = ({ biasType }: { biasType: typeof biasTypes[0] }) => {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-4"
+      >
+        <div className="flex items-start gap-3">
+          <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${biasType.color} flex items-center justify-center flex-shrink-0`}>
+            {biasType.icon}
+          </div>
+          <div>
+            <h3 className="text-lg font-medium">{biasType.title}</h3>
+            <p className="text-sm text-muted-foreground mt-1">{biasType.description}</p>
+          </div>
+        </div>
         
-        <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {stages.map((stage) => (
-            <div key={stage.id} className="flex flex-col items-center">
-              <button
-                onClick={() => setActiveStage(stage.id === activeStage ? 0 : stage.id)}
+        <div className="mt-4 pt-4 border-t">
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <h4 className="text-sm font-medium">Visual Example</h4>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center gap-1 h-7 text-xs" 
+                onClick={() => setShowBias(!showBias)}
+              >
+                {showBias ? (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5" />
+                    <span>Hide Bias</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>Show Bias</span>
+                  </>
+                )}
+              </Button>
+            </div>
+            {biasType.visual}
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t">
+          <h4 className="text-sm font-medium mb-2">Real-World Example</h4>
+          <div className="bg-muted/30 p-3 rounded-md text-sm">
+            <p>{biasType.example}</p>
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t">
+          <h4 className="text-sm font-medium mb-2">Where It Appears in the Process</h4>
+          <div className="grid grid-cols-4 gap-1">
+            {stages.map(stage => (
+              <div 
+                key={stage.id} 
                 className={cn(
-                  "h-24 w-24 rounded-full flex flex-col items-center justify-center text-center transition-colors",
-                  activeStage === stage.id 
-                    ? "bg-primary text-primary-foreground" 
-                    : "bg-muted hover:bg-muted/70"
+                  "p-2 rounded-md text-center text-xs font-medium",
+                  stage.biases.some(bias => bias.toLowerCase().includes(biasType.id)) 
+                    ? "bg-primary/10 text-primary" 
+                    : "bg-muted/30 text-muted-foreground"
                 )}
               >
-                <span className="text-2xl font-bold mb-1">{stage.id}</span>
-                <span className="text-xs px-2">{stage.title}</span>
-              </button>
-            </div>
-          ))}
+                Stage {stage.id}
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
+  const AIHiringPipeline = () => {
+    return (
+      <div className="mt-8 space-y-6">
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">The AI Hiring Pipeline</h3>
+          <p className="text-sm text-muted-foreground">
+            Bias can enter at multiple stages of the AI-powered hiring process. Click each stage to learn more.
+          </p>
+        </div>
+        
+        <div className="relative">
+          <div className="absolute h-0.5 bg-muted top-6 left-8 right-8 z-0"></div>
+          <div className="relative z-10 flex justify-between">
+            {stages.map((stage) => (
+              <div key={stage.id} className="flex flex-col items-center w-1/4">
+                <button
+                  onClick={() => setActiveStage(stage.id === activeStage ? 0 : stage.id)}
+                  className={cn(
+                    "h-12 w-12 rounded-full flex items-center justify-center text-sm font-medium transition-colors border-2",
+                    activeStage === stage.id 
+                      ? "bg-primary text-primary-foreground border-primary" 
+                      : "bg-muted border-muted-foreground/20"
+                  )}
+                >
+                  {stage.id}
+                </button>
+                <div className="mt-2 text-xs font-medium text-center">{stage.title}</div>
+              </div>
+            ))}
+          </div>
         </div>
         
         <AnimatePresence mode="wait">
@@ -477,85 +463,324 @@ const BiasExplanation: React.FC = () => {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="mt-8 overflow-hidden"
+              className="overflow-hidden"
             >
-              <Card>
+              <Card className="mt-4">
                 <CardHeader>
-                  <CardTitle>Stage {activeStage}: {stages[activeStage - 1].title}</CardTitle>
+                  <CardTitle className="text-base">Stage {activeStage}: {stages[activeStage - 1].title}</CardTitle>
                   <CardDescription>{stages[activeStage - 1].description}</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-medium mb-2">How Bias Enters:</h4>
-                    <ul className="space-y-3">
-                      {stages[activeStage - 1].biases.map((bias, i) => (
-                        <li key={i} className="flex gap-2">
-                          <AlertCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                          <span>{bias}</span>
-                        </li>
+                <CardContent>
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium">Potential Bias Points:</h4>
+                    <ul className="space-y-2">
+                      {stages[activeStage - 1].biases.map((bias, index) => (
+                        <motion.li 
+                          key={index} 
+                          initial={{ opacity: 0, x: -5 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex items-start gap-2"
+                        >
+                          <AlertCircle className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">{bias}</span>
+                        </motion.li>
                       ))}
                     </ul>
                   </div>
-                  
-                  <div className="bg-muted/30 p-4 rounded-md">
-                    <h4 className="font-medium mb-1">Example:</h4>
-                    <p>{stages[activeStage - 1].example}</p>
-                  </div>
                 </CardContent>
+                <CardFooter className="bg-muted/30 text-sm">
+                  <p>{stages[activeStage - 1].example}</p>
+                </CardFooter>
               </Card>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </div>
-  );
-  
-  const SimplifiedBiasExplanation = () => (
-    <div className="space-y-12">
-      <div className="bg-muted/50 p-6 rounded-lg">
-        <h3 className="text-xl font-bold mb-4">What is Algorithmic Bias?</h3>
-        <p className="mb-4">
-          Algorithmic bias in hiring occurs when AI systems produce results that unfairly favor certain groups over others. 
-          This usually happens unintentionally, but can have real consequences for job seekers.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-          <div className="bg-background p-4 rounded-md">
-            <h4 className="font-medium mb-2">Not A Bug, But A Feature</h4>
-            <p className="text-sm text-muted-foreground">
-              AI learns from historical data, so biases in that data become "features" the system learns to replicate.
-            </p>
-          </div>
-          <div className="bg-background p-4 rounded-md">
-            <h4 className="font-medium mb-2">Invisible To Developers</h4>
-            <p className="text-sm text-muted-foreground">
-              Many biases are subtle and not obvious to the teams building AI systems.
-            </p>
-          </div>
-          <div className="bg-background p-4 rounded-md">
-            <h4 className="font-medium mb-2">Multiplies Over Time</h4>
-            <p className="text-sm text-muted-foreground">
-              When biased AI makes hiring decisions, it creates new biased data, amplifying the problem.
-            </p>
-          </div>
-        </div>
-      </div>
+    );
+  };
 
-      <BiasTypesSimplified />
-      <BiasFlowchart />
+  const renderDetailContent = () => (
+    <div className="pt-2">
+      <div className="mb-6">
+        <h3 className="text-xl font-bold mb-2">Types of Algorithmic Bias</h3>
+        <p className="text-sm text-muted-foreground">
+          Explore the various ways bias enters AI hiring systems by selecting a type below.
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {biasTypes.map((type) => (
+          <button
+            key={type.id}
+            onClick={() => setActiveBiasType(type.id)}
+            className={cn(
+              "p-3 rounded-lg transition-all text-left flex items-center gap-2",
+              activeBiasType === type.id
+                ? `bg-gradient-to-br ${type.color} border border-primary/10`
+                : "bg-muted/30 hover:bg-muted/50 border border-transparent"
+            )}
+          >
+            <div className={cn(
+              "h-7 w-7 rounded-full flex items-center justify-center flex-shrink-0",
+              activeBiasType === type.id ? "bg-background/80" : "bg-background/30"
+            )}>
+              {type.icon}
+            </div>
+            <span className="text-sm font-medium">{type.title}</span>
+          </button>
+        ))}
+      </div>
+      
+      <Separator className="my-6" />
+      
+      <div>
+        <AnimatePresence mode="wait">
+          <DetailPanel 
+            key={activeBiasType} 
+            biasType={biasTypes.find(t => t.id === activeBiasType)!} 
+          />
+        </AnimatePresence>
+      </div>
+      
+      <AIHiringPipeline />
     </div>
   );
 
   // Mobile version uses Drawer
   const renderMobileView = () => (
     <div className="w-full max-w-3xl mx-auto opacity-0 animate-fade-in-up">
-      <SimplifiedBiasExplanation />
+      <div className="grid grid-cols-1 md:hidden gap-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Understanding Bias in AI</h3>
+            <Drawer>
+              <DrawerTrigger asChild>
+                <Button variant="outline">Explore Bias Types</Button>
+              </DrawerTrigger>
+              <DrawerContent className="max-h-[80vh] overflow-y-auto">
+                <DrawerHeader>
+                  <DrawerTitle>Types of Algorithmic Bias</DrawerTitle>
+                  <DrawerDescription>
+                    Explore the various ways bias enters AI hiring systems
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="px-4 pb-8">
+                  {renderDetailContent()}
+                </div>
+              </DrawerContent>
+            </Drawer>
+          </div>
+          
+          <div className="space-y-3">
+            <p>
+              Algorithmic bias in hiring occurs when AI systems systematically produce unfair outcomes for different demographic groups.
+            </p>
+            <p>
+              These biases aren't typically introduced intentionally, but emerge from the data, design choices, and how systems are implemented.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-4">
+            {biasTypes.slice(0, 3).map((type, i) => (
+              <Card key={type.id}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`h-8 w-8 rounded-full bg-gradient-to-br ${type.color} flex items-center justify-center`}>
+                      {type.icon}
+                    </div>
+                    <CardTitle className="text-base">{type.title}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription>{type.description}</CardDescription>
+                </CardContent>
+                <CardFooter className="pt-0 flex justify-end">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="sm" className="text-xs flex items-center gap-1">
+                        Learn more <ChevronRight className="h-3 w-3" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{type.title}</DialogTitle>
+                        <DialogDescription>{type.description}</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-medium mb-1">Example:</h4>
+                          <p className="text-sm">{type.example}</p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium mb-1">Visual Representation:</h4>
+                          <div className="relative">
+                            {type.visual}
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="absolute top-2 right-2 h-7 text-xs z-10"
+                              onClick={() => setShowBias(!showBias)}
+                            >
+                              {showBias ? "Hide Bias" : "Show Bias"}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowBias(false)}>
+                          Reset
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+          
+          <Button 
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              // Fix: Use querySelector to find the element, and directly use the drawer trigger ref
+              const drawerTrigger = document.querySelector('[aria-controls="radix-:r12:"]');
+              if (drawerTrigger && drawerTrigger instanceof HTMLElement) {
+                drawerTrigger.click();
+              }
+            }}
+          >
+            View All Bias Types
+          </Button>
+        </div>
+      </div>
+      
+      <div className="hidden md:block">
+        {renderDesktopView()}
+      </div>
     </div>
   );
 
   // Desktop version uses tabs
   const renderDesktopView = () => (
     <div className="w-full max-w-3xl mx-auto opacity-0 animate-fade-in-up">
-      <SimplifiedBiasExplanation />
+      <div className="grid grid-cols-1 gap-8">
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-xl font-bold mb-2">How Bias Enters AI Hiring Systems</h3>
+            <p className="text-muted-foreground">
+              Algorithmic bias isn't usually introduced intentionally—it emerges through various mechanisms in the development and application of AI systems.
+            </p>
+          </div>
+          
+          <Tabs defaultValue="types" className="w-full">
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="types">Bias Types</TabsTrigger>
+              <TabsTrigger value="pipeline">AI Hiring Pipeline</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="types" className="pt-6">
+              {renderDetailContent()}
+            </TabsContent>
+            
+            <TabsContent value="pipeline" className="pt-6">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium">The AI Hiring Process</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Modern AI-driven hiring systems involve multiple stages where bias can enter and be amplified.
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {stages.map((stage) => (
+                    <motion.div
+                      key={stage.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: stage.id * 0.1 }}
+                      className="border rounded-lg overflow-hidden bg-gradient-to-br from-background to-muted/30"
+                    >
+                      <div className="p-4 border-b bg-muted/20">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <span className="text-sm font-medium">{stage.id}</span>
+                          </div>
+                          <h3 className="font-medium">{stage.title}</h3>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <p className="text-sm text-muted-foreground mb-4">{stage.description}</p>
+                        <h4 className="text-sm font-medium mb-2">Potential Biases:</h4>
+                        <ul className="space-y-2">
+                          {stage.biases.map((bias, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm">
+                              <AlertCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                              <span>{bias}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="p-3 bg-muted/30 border-t">
+                        <div className="flex items-start gap-2">
+                          <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+                            <span className="text-xs">Ex</span>
+                          </div>
+                          <p className="text-xs">{stage.example}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                
+                <div className="p-4 border rounded-lg mt-8 bg-primary/5">
+                  <h3 className="text-lg font-medium mb-3">The Amplification Effect</h3>
+                  <p className="text-sm mb-3">
+                    In AI hiring systems, bias isn't just present—it gets amplified through feedback loops:
+                  </p>
+                  <ol className="space-y-3">
+                    <li className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+                        <span className="text-xs">1</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Initial Bias:</span> Historical hiring data contains patterns of discrimination
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+                        <span className="text-xs">2</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Learning:</span> AI systems learn to replicate these patterns, favoring certain demographics
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+                        <span className="text-xs">3</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Reinforcement:</span> The system's biased selections become new "successful" data points
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+                        <span className="text-xs">4</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-medium">Amplification:</span> With each cycle, the bias becomes more pronounced in the model
+                      </div>
+                    </li>
+                  </ol>
+                  <div className="mt-4 pt-3 border-t text-sm text-muted-foreground">
+                    This feedback loop is why proactive bias detection and mitigation strategies are essential in AI hiring systems.
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 
